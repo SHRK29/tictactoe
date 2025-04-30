@@ -34,9 +34,9 @@ public class ConnectionErrorView {
         subtitle.setEffect(new DropShadow(8, Color.web("#FF2DF1")));
 
         // Imagen central
-        ImageView icon = new ImageView(new Image(getClass().getResourceAsStream("/images/ErrorClose.png")));
-        icon.setFitWidth(100);
-        icon.setFitHeight(100);
+        ImageView icon = new ImageView(new Image(getClass().getResourceAsStream("/Icons/ErrorClose.png")));
+        icon.setFitWidth(300);
+        icon.setFitHeight(300);
 
         // Botón de reintento
         Button retryButton = new Button("REINTENTAR");
