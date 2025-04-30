@@ -25,7 +25,7 @@ public class App extends Application {
         primaryStage.setScene(loginView.getScene());
         primaryStage.show();
         new DisconnectedView().show();
-        //
+        new ConnectionErrorView().show();
 
     }
 }
