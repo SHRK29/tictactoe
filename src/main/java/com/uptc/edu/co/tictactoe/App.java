@@ -20,12 +20,9 @@ public class App extends Application {
         } catch (Exception e) {
             System.err.println("Error al cargar la fuente: " + e.getMessage());
         }
-        
+
         LoginView loginView = new LoginView();
         primaryStage.setScene(loginView.getScene());
         primaryStage.show();
-        new DisconnectedView().show();
-        //
-
     }
 }
