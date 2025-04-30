@@ -1,0 +1,56 @@
+/* Fuente */
+@font-face {
+    font-family: 'Baloo 2 ExtraBold';
+    src: url('../Fonts/Baloo2-ExtraBold.ttf');
+}
+
+/* Estructura */
+.how-root {
+    -fx-background-color: #410445;
+    -fx-background-radius: 20;
+    -fx-effect: innershadow(gaussian, rgba(0,0,0,0.7), 30, 0, 0, 0);
+}
+
+/* Título */
+.how-title {
+    -fx-font-family: 'Baloo 2 ExtraBold';
+    -fx-text-fill: #F6DC43;
+    -fx-font-size: 42px;
+    -fx-effect: dropshadow(gaussian, rgba(255,45,241,0.5), 15, 0.3, 0, 0);
+}
+
+/* Texto instrucciones */
+.how-text {
+    -fx-font-family: 'Baloo 2 ExtraBold';
+    -fx-text-fill: white;
+    -fx-font-size: 20px;
+    -fx-line-spacing: 8px;
+    -fx-alignment: center;
+    -fx-padding: 0 50px;
+}
+
+/* Botón (copiado exacto de login.css) */
+.neon-button {
+    -fx-font-family: 'Baloo 2 ExtraBold';
+    -fx-text-fill: white;
+    -fx-background-color: #A5158C;
+    -fx-background-radius: 30;
+    -fx-border-color: #F6DC43;
+    -fx-border-width: 2;
+    -fx-border-radius: 30;
+    -fx-pref-width: 280px;
+    -fx-pref-height: 60px;
+    -fx-effect: dropshadow(gaussian, rgba(246,220,67,0.3), 10, 0, 0, 2);
+    -fx-cursor: hand;
+}
+
+.neon-button:hover {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #410445, #2D0230);
+    -fx-text-fill: #FF2DF1;
+    -fx-effect: dropshadow(gaussian, rgba(246,220,67,0.6), 15, 0, 0, 3);
+}
+
+.neon-button:pressed {
+    -fx-translate-y: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(246,220,67,0.1), 5, 0, 0, 1);
+}

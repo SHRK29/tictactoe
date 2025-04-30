@@ -1,0 +1,26 @@
+.background {
+    -fx-background-color: #410445;
+    -fx-background-radius: 20;
+    -fx-effect: innershadow(gaussian, rgba(0,0,0,0.7), 30, 0, 0, 0);
+}
+
+.neon-button {
+    -fx-text-fill: white;
+    -fx-background-color: #410445;
+    -fx-background-radius: 30;
+    -fx-border-color: linear-gradient(to bottom, #F6DC43, #A5158C);
+    -fx-border-width: 2;
+    -fx-border-radius: 30;
+    -fx-pref-width: 280px;
+    -fx-pref-height: 60px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.3), 10, 0, 0, 2);
+    -fx-font-family: "Baloo 2 ExtraBold";
+}
+
+.neon-button:hover {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #410445, #2D0230);
+    -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.6), 15, 0, 0, 3);
+    -fx-text-fill: #FF2DF1;
+    -fx-translate-y: -1;
+}
