@@ -1,28 +1,30 @@
 package com.uptc.edu.co.tictactoe;
 
-import com.uptc.edu.co.tictactoe.Views.ConnectionErrorView;
-import com.uptc.edu.co.tictactoe.Views.DisconnectedView;
 import com.uptc.edu.co.tictactoe.Views.LoginView;
+import com.uptc.edu.co.tictactoe.Utils.WindowUtils;
+import com.uptc.edu.co.tictactoe.Utils.FontUtils;
 import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.text.Font; // <-- Importación faltante
 import javafx.stage.Stage;
 
 public class App extends Application {
+    
     @Override
     public void start(Stage primaryStage) {
-        // Precargar la fuente con verificación
-        try {
-            Font font = Font.loadFont(getClass().getResourceAsStream("/Fonts/Baloo2-ExtraBold.ttf"), 12);
-            if (font == null) {
-                System.err.println("¡Error: La fuente no se cargó correctamente!");
-            }
-        } catch (Exception e) {
-            System.err.println("Error al cargar la fuente: " + e.getMessage());
-        }
-
+        // Precargar la fuente al inicio
+        FontUtils.cargarFuenteBaloo(1);
+        
+        // Configurar y mostrar la ventana principal
         LoginView loginView = new LoginView();
+        WindowUtils.configurarVentanaPantallaCompleta(primaryStage, false); // false porque es Stage existente
+        
         primaryStage.setScene(loginView.getScene());
+        primaryStage.setTitle("Tic Tac Toe - UPTC");
         primaryStage.show();
+    }
+
+    public static void main(String[] args) {
+        // Precarga temprana opcional
+        FontUtils.cargarFuenteBaloo(1);
+        launch(args);
     }
 }

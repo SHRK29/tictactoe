@@ -7,10 +7,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
-
-import java.io.InputStream;
+import com.uptc.edu.co.tictactoe.Utils.FontUtils;
+import com.uptc.edu.co.tictactoe.Utils.WindowUtils;
 
 public class DisconnectedView {
 
@@ -20,9 +19,9 @@ public class DisconnectedView {
         root.setAlignment(Pos.CENTER);
         root.getStyleClass().add("disconnected-root");
 
-        // Mensaje principal
+        // Mensaje principal con fuente cargada mediante FontUtils
         Label message = new Label("DESCONEXIÓN DEL SERVIDOR");
-        message.setFont(loadCustomFont(36));
+        message.setFont(FontUtils.cargarFuenteBaloo(36));
         message.getStyleClass().add("disconnected-message");
         message.setWrapText(true);
         message.setAlignment(Pos.CENTER);
@@ -31,7 +30,7 @@ public class DisconnectedView {
         ImageView warningIcon = new ImageView(new Image(getClass().getResource("/icons/Warning.png").toExternalForm()));
         warningIcon.setPreserveRatio(true);
         warningIcon.getStyleClass().add("warning-icon");
-        warningIcon.setFitWidth(200); // Tamaño base
+        warningIcon.setFitWidth(200);
 
         root.getChildren().addAll(message, warningIcon);
 
@@ -40,28 +39,12 @@ public class DisconnectedView {
         scene.getStylesheets().add(getClass().getResource("/styles/disconnected.css").toExternalForm());
 
         Stage stage = new Stage();
+        WindowUtils.configurarVentanaPantallaCompleta(stage, true);
         stage.setTitle("Error de conexión");
         stage.setScene(scene);
         stage.show();
 
         // Ajustes responsive
         warningIcon.fitWidthProperty().bind(scene.widthProperty().divide(4));
-    }
-
-    private Font loadCustomFont(double size) {
-        try {
-            InputStream is = getClass().getResourceAsStream("/fonts/Baloo2-ExtraBold.ttf");
-            if (is != null) {
-                Font font = Font.loadFont(is, size);
-                if (font != null) {
-                    return font;
-                }
-            }
-            // Fallback seguro
-            return Font.font("Arial", FontWeight.BOLD, size);
-        } catch (Exception e) {
-            System.err.println("Error loading font: " + e.getMessage());
-            return Font.font("Arial", FontWeight.BOLD, size);
-        }
     }
 }

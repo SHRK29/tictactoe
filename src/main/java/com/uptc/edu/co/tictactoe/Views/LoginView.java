@@ -11,8 +11,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import javafx.application.Platform;
 import com.uptc.edu.co.tictactoe.Views.HowToPlayView;
+import com.uptc.edu.co.tictactoe.Utils.FontUtils;
 
 import java.io.InputStream;
 
@@ -27,9 +29,9 @@ public class LoginView {
 
     public LoginView() {
         // Cargar fuentes con manejo de errores
-        Font balooFont = loadCustomFont(110);
-        Font balooFontMedium = loadCustomFont(22);
-        Font balooFontSmall = loadCustomFont(18);
+        Font balooFont = FontUtils.cargarFuenteBaloo(110);
+        Font balooFontMedium = FontUtils.cargarFuenteBaloo(22);
+        Font balooFontSmall = FontUtils.cargarFuenteBaloo(18);
 
         VBox mainLayout = new VBox(30);
         mainLayout.setAlignment(Pos.CENTER);
@@ -74,34 +76,18 @@ public class LoginView {
         scene.getStylesheets().add(getClass().getResource("/styles/login.css").toExternalForm());
 
         // Acciones de los botones
-        
+
         // Acción para botón ¿Cómo jugar?
         howToPlayButton.setOnAction(e -> {
-            new HowToPlayView().show(); // Abre la nueva vista
+            Stage currentStage = (Stage) howToPlayButton.getScene().getWindow();
+            HowToPlayView howToPlayView = new HowToPlayView(currentStage);
+            howToPlayView.show();
         });
-
         // Acción para botón Salir
         exitButton.setOnAction(e -> {
             Platform.exit(); // Cierra la aplicación
         });
 
-    }
-
-    private Font loadCustomFont(double size) {
-        try {
-            InputStream is = getClass().getResourceAsStream("/Fonts/Baloo2-ExtraBold.ttf");
-            if (is != null) {
-                Font font = Font.loadFont(is, size);
-                if (font != null) {
-                    return font;
-                }
-            }
-            System.err.println("No se pudo cargar Baloo 2, usando Arial como fallback");
-            return Font.font("Arial", FontWeight.EXTRA_BOLD, size);
-        } catch (Exception e) {
-            System.err.println("Error al cargar fuente: " + e.getMessage());
-            return Font.font("Arial", FontWeight.EXTRA_BOLD, size);
-        }
     }
 
     private Button createStyledButton(String text, Font font) {
@@ -110,7 +96,6 @@ public class LoginView {
         button.getStyleClass().add("neon-button");
         button.setPrefSize(280, 60);
 
-        // Efectos interactivos
         button.setOnMouseEntered(e -> {
             button.setEffect(new DropShadow(15, Color.web("#F6DC43")));
             button.setTranslateY(-2);
