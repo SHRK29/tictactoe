@@ -1,0 +1,130 @@
+/* =============================================== */
+/* game.css - Estilos para GameViewOffline.java    */
+/* =============================================== */
+
+/* ----------------- Fuentes -------------------- */
+@font-face {
+  font-family: 'Baloo 2 ExtraBold';
+  src: url('Fonts/Baloo2-ExtraBold.ttf');
+}
+
+/* ------------- Estructura Principal ----------- */
+.game-background {
+  -fx-background-color: #410445;
+  -fx-font-family: 'Baloo 2 ExtraBold';
+}
+/* ========= HEADER ========= */
+.header-container {
+  -fx-background-color: transparent;
+  -fx-padding: 0;
+  -fx-alignment: center;
+  -fx-spacing: 40px; /* Espacio entre elementos */
+  -fx-pref-width: 100%;
+  -fx-max-width: Infinity;
+}
+
+.player-box { /* Nuevo contenedor horizontal para jugador */
+  -fx-alignment: center;
+  -fx-spacing: 20px;
+}
+
+.player-icon {
+  -fx-fit-width: 240px;
+  -fx-fit-height: 240px;
+}
+
+.player-name, #player2Name { /* Selector múltiple explícito */
+  -fx-font-size: 36px !important; /* Fuerza la aplicación */
+  -fx-font-weight: 800; /* Asegura grosor consistente */
+}
+
+.player-name {
+  -fx-text-fill: #FFFFFF;
+  -fx-effect: dropshadow(gaussian, rgba(0, 255, 238, 0.8), 10, 0.4, 0, 2);
+}
+
+#player2Name {
+  -fx-text-fill: #FF2DF1;
+  -fx-effect: dropshadow(gaussian, rgba(255, 45, 241, 0.8), 10, 0.4, 0, 2);
+}
+
+.vs-container {
+  -fx-font-size: 54px;
+  -fx-text-fill: #F6DC43;
+  -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.9), 25, 0.5, 0, 3);
+  -fx-padding: 0 40px;
+}
+
+/* ----------------- Tablero -------------------- */
+
+/* ----------------- Tablero -------------------- */
+.board-container {
+  -fx-alignment: center;
+  -fx-padding: 0; 
+}
+
+.game-grid {
+  -fx-padding: 0; /* Eliminar margen interno del grid */
+  -fx-background-insets: 0; /* Quitar bordes implícitos */
+}
+
+.grid-cell {
+  -fx-min-width: 140px;
+  -fx-min-height: 140px;
+  -fx-background-color: rgba(255, 255, 255, 0.1);
+  -fx-border-radius: 10px;
+  -fx-background-radius: 10px;
+  -fx-cursor: hand;
+  -fx-padding: 0; /* Eliminar padding interno del botón */
+}
+
+.line-pane {
+  -fx-opacity: 0.9;
+}
+
+.grid-cell:hover {
+  -fx-background-color: rgba(246, 220, 67, 0.15);
+}
+
+/* --------- Texto Alternativo (X/O) ------------ */
+.cell-text-x {
+  -fx-effect: dropshadow(three-pass-box, #00FFEE, 35, 0.9, 0, 0);
+}
+
+.cell-text-o {
+  -fx-effect: dropshadow(three-pass-box, #FF2DF1, 35, 0.9, 0, 0);
+}
+
+/* --------- Título Principal ------------------- */
+.main-title {
+  -fx-font-size: 42px;
+  -fx-text-fill: #FF2DF1; /* Color rosa neón */
+  -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.2), 15, 0.3, 0, 0); /* Efecto de brillo suave */
+  -fx-text-alignment: center; /* Alineación centrada */
+  -fx-alignment: center; /* Alineación del contenedor */
+  -fx-font-weight: bold; /* Grosor consistente con la fuente Baloo */
+}
+
+/* --------- Botón Home ------------------------- */
+.home-button {
+  -fx-background-color: rgba(255, 255, 255, 0.1);
+  -fx-background-radius: 15px;
+  -fx-padding: 8px;
+  -fx-cursor: hand;
+  -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.5), 10, 0.3, 0, 1);
+}
+
+.home-button:hover {
+  -fx-background-color: rgba(255, 255, 255, 0.2);
+  -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.8), 15, 0.4, 0, 2);
+}
+
+.home-button:pressed {
+  -fx-translate-y: 2px;
+  -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.3), 8, 0.2, 0, 1);
+}
+
+/* --------- Efectos Generales ------------------ */
+.image-view {
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0.5, 0, 0);
+}

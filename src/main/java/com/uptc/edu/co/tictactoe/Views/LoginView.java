@@ -88,6 +88,17 @@ public class LoginView {
             Platform.exit(); // Cierra la aplicación
         });
 
+        vsPcButton.setOnAction(e -> {
+            String playerName = nameField.getText().trim();
+            if (playerName.isEmpty()) {
+                playerName = "Jugador 1"; // Nombre por defecto si no ingresa uno
+            }
+            Stage currentStage = (Stage) vsPcButton.getScene().getWindow();
+            GameViewOffline gameView = new GameViewOffline(currentStage, playerName); // Pasa el stage actual y el
+                                                                                      // nombre
+            gameView.show(); // Muestra la ventana del juego (y oculta LoginView)
+        });
+
     }
 
     private Button createStyledButton(String text, Font font) {
