@@ -73,7 +73,7 @@ public class GameViewOffline {
         scene = new Scene(rootLayout, 1000, 700);
         initializeGame();
 
-        scene.getStylesheets().add(getClass().getResource("/styles/game.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/Styles/game.css").toExternalForm());
     }
 
     private void loadImages() {
