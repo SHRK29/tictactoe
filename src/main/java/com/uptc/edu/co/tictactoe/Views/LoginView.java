@@ -14,7 +14,9 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.application.Platform;
 import com.uptc.edu.co.tictactoe.Views.HowToPlayView;
+import com.uptc.edu.co.tictactoe.App;
 import com.uptc.edu.co.tictactoe.Utils.FontUtils;
+import com.uptc.edu.co.tictactoe.Utils.WindowUtils;
 
 import java.io.InputStream;
 
@@ -22,13 +24,15 @@ public class LoginView {
 
     private Scene scene;
     private TextField nameField;
+    private Stage primaryStage;
     private Button onlineButton;
     private Button vsPcButton;
     private Button howToPlayButton;
     private Button exitButton;
 
-    public LoginView() {
-        // Cargar fuentes con manejo de errores
+    public LoginView(Stage appStage) {
+        this.primaryStage = appStage;
+        WindowUtils.configurarVentanaPantallaCompleta(this.primaryStage);
         Font balooFont = FontUtils.cargarFuenteBaloo(110);
         Font balooFontMedium = FontUtils.cargarFuenteBaloo(22);
         Font balooFontSmall = FontUtils.cargarFuenteBaloo(18);
@@ -78,11 +82,13 @@ public class LoginView {
         // Acciones de los botones
 
         // Acción para botón ¿Cómo jugar?
+
         howToPlayButton.setOnAction(e -> {
-            Stage currentStage = (Stage) howToPlayButton.getScene().getWindow();
-            HowToPlayView howToPlayView = new HowToPlayView(currentStage);
-            howToPlayView.show();
+            HowToPlayView howToPlayView = new HowToPlayView(primaryStage);
+            App.getPrimaryStage().setScene(howToPlayView.getScene());
+            WindowUtils.configurarVentanaPantallaCompleta(this.primaryStage);
         });
+
         // Acción para botón Salir
         exitButton.setOnAction(e -> {
             Platform.exit(); // Cierra la aplicación
@@ -90,13 +96,11 @@ public class LoginView {
 
         vsPcButton.setOnAction(e -> {
             String playerName = nameField.getText().trim();
-            if (playerName.isEmpty()) {
-                playerName = "Jugador 1"; // Nombre por defecto si no ingresa uno
-            }
-            Stage currentStage = (Stage) vsPcButton.getScene().getWindow();
-            GameViewOffline gameView = new GameViewOffline(currentStage, playerName); // Pasa el stage actual y el
-                                                                                      // nombre
-            gameView.show(); // Muestra la ventana del juego (y oculta LoginView)
+            if (playerName.isEmpty())
+                playerName = "Jugador 1";
+
+            GameViewOffline gameView = new GameViewOffline(this.primaryStage, playerName);
+            gameView.show();
         });
 
     }

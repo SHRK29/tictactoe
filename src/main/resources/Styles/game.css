@@ -60,22 +60,18 @@
 /* ----------------- Tablero -------------------- */
 .board-container {
   -fx-alignment: center;
-  -fx-padding: 0; 
 }
 
 .game-grid {
-  -fx-padding: 0; /* Eliminar margen interno del grid */
+  -fx-border-insets: -2px;       /* Empuja el borde hacia afuera */
   -fx-background-insets: 0; /* Quitar bordes implícitos */
 }
 
 .grid-cell {
-  -fx-min-width: 140px;
-  -fx-min-height: 140px;
   -fx-background-color: rgba(255, 255, 255, 0.1);
   -fx-border-radius: 10px;
   -fx-background-radius: 10px;
   -fx-cursor: hand;
-  -fx-padding: 0; /* Eliminar padding interno del botón */
 }
 
 .line-pane {

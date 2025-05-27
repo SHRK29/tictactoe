@@ -17,7 +17,7 @@ import com.uptc.edu.co.tictactoe.Utils.WindowUtils;
 public class LoadingView {
 
     private static final int TOTAL_FRAMES = 10;
-    private static final int FRAME_RATE = 150; // ms por frame
+    private static final int FRAME_RATE = 150;
 
     public void show() {
         List<Image> frames = new ArrayList<>();
@@ -51,10 +51,9 @@ public class LoadingView {
         for (int i = 0; i < frames.size(); i++) {
             final int index = i;
             animation.getKeyFrames().add(
-                new KeyFrame(Duration.millis(FRAME_RATE * i), e -> {
-                    imageView.setImage(frames.get(index));
-                })
-            );
+                    new KeyFrame(Duration.millis(FRAME_RATE * i), e -> {
+                        imageView.setImage(frames.get(index));
+                    }));
         }
         animation.setCycleCount(Timeline.INDEFINITE);
         animation.play();
@@ -64,7 +63,7 @@ public class LoadingView {
 
         Scene scene = new Scene(root, imageView.getFitWidth(), imageView.getFitHeight());
         Stage stage = new Stage();
-        WindowUtils.configurarVentanaPantallaCompleta(stage, true);
+        WindowUtils.configurarVentanaPantallaCompleta(stage);
 
         stage.setTitle("Cargando...");
         stage.setScene(scene);

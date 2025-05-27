@@ -1,5 +1,6 @@
 package com.uptc.edu.co.tictactoe.Views;
 
+import com.uptc.edu.co.tictactoe.App;
 import com.uptc.edu.co.tictactoe.Utils.FontUtils;
 import com.uptc.edu.co.tictactoe.Utils.WindowUtils;
 
@@ -25,10 +26,10 @@ import java.util.Random;
 
 public class GameViewOffline {
 
-    private Stage primaryStage;
     private String playerName;
-    private BorderPane rootLayout;
     private Scene scene;
+    private BorderPane rootLayout;
+    private Stage primaryStage;
     private GridPane gameGrid;
     private Button[][] gridButtons = new Button[3][3];
     private Label player1Label;
@@ -65,15 +66,14 @@ public class GameViewOffline {
     private final double GRID_GAP = 15.0;
     private final double LINE_THICKNESS = 4.0;
 
-    public GameViewOffline(Stage primaryStage, String playerName) {
-        this.primaryStage = primaryStage;
+    public GameViewOffline(Stage appStage, String playerName) {
+        this.primaryStage = appStage;
         this.playerName = playerName;
         loadImages();
         rootLayout = createLayout();
-        scene = new Scene(rootLayout, 1000, 700);
-        initializeGame();
-
+        scene = new Scene(rootLayout);
         scene.getStylesheets().add(getClass().getResource("/Styles/game.css").toExternalForm());
+        initializeGame();
     }
 
     private void loadImages() {
@@ -186,7 +186,8 @@ public class GameViewOffline {
         StackPane boardPane = new StackPane();
         boardPane.getStyleClass().add("board-container"); // Aplicar nueva clase
         boardPane.setAlignment(Pos.CENTER); // Centrar contenido
-        boardPane.getChildren().addAll(linePane, gameGrid);
+        linePane.setMouseTransparent(true);
+        boardPane.getChildren().addAll(gameGrid, linePane);
 
         // Logo X
         ImageView xLogo = createImageView(imageX, 100);
@@ -232,14 +233,9 @@ public class GameViewOffline {
     }
 
     private void navigateToLogin() {
-        Stage currentStage = (Stage) rootLayout.getScene().getWindow();
-        LoginView loginView = new LoginView();
-        Stage loginStage = new Stage();
-        loginStage.setScene(loginView.getScene());
-        WindowUtils.configurarVentanaPantallaCompleta(loginStage, false);
-        loginStage.setTitle("Login");
-        loginStage.show();
-        currentStage.close();
+        LoginView loginView = new LoginView(this.primaryStage);
+        App.getPrimaryStage().setScene(loginView.getScene());
+        WindowUtils.configurarVentanaPantallaCompleta(this.primaryStage);
     }
 
     private Pane createLinePane() {
@@ -249,22 +245,27 @@ public class GameViewOffline {
         double totalWidth = 3 * CELL_SIZE + 2 * GRID_GAP;
         double totalHeight = 3 * CELL_SIZE + 2 * GRID_GAP;
 
-        // Añadir ajuste vertical de 2px para compensar el margen del GridPane
-        double verticalOffset = 2;
+        // Líneas verticales (entre columnas)
+        double verticalLineX1 = CELL_SIZE + GRID_GAP / 2.0;
+        double verticalLineX2 = 2 * CELL_SIZE + 1.5 * GRID_GAP;
 
-        // Líneas verticales
-        double verticalLineX1 = CELL_SIZE + GRID_GAP / 2;
-        double verticalLineX2 = 2 * CELL_SIZE + GRID_GAP * 1.5;
-        Line verticalLine1 = createNeonLine(false, verticalLineX1, verticalOffset, verticalLineX1, totalHeight);
-        Line verticalLine2 = createNeonLine(false, verticalLineX2, verticalOffset, verticalLineX2, totalHeight);
+        Line verticalLine1 = createNeonLine(false, verticalLineX1, 0, verticalLineX1, totalHeight);
+        Line verticalLine2 = createNeonLine(false, verticalLineX2, 0, verticalLineX2, totalHeight);
 
-        // Líneas horizontales
-        double horizontalLineY1 = CELL_SIZE + GRID_GAP / 2 + verticalOffset;
-        double horizontalLineY2 = 2 * CELL_SIZE + GRID_GAP * 1.5 + verticalOffset;
+        // Líneas horizontales (entre filas)
+        double horizontalLineY1 = CELL_SIZE + GRID_GAP / 2.0;
+        double horizontalLineY2 = 2 * CELL_SIZE + 1.5 * GRID_GAP;
+
         Line horizontalLine1 = createNeonLine(true, 0, horizontalLineY1, totalWidth, horizontalLineY1);
         Line horizontalLine2 = createNeonLine(true, 0, horizontalLineY2, totalWidth, horizontalLineY2);
 
         pane.getChildren().addAll(verticalLine1, verticalLine2, horizontalLine1, horizontalLine2);
+
+        // Establecer tamaño fijo del pane para que coincida con el GridPane
+        pane.setPrefSize(totalWidth, totalHeight);
+        pane.setMaxSize(totalWidth, totalHeight);
+        pane.setMinSize(totalWidth, totalHeight);
+
         return pane;
     }
 
@@ -328,11 +329,11 @@ public class GameViewOffline {
 
     private void handleCellClick(int row, int col) {
         if (boardState[row][col] == ' ' && !gameOver && playerTurn) {
-            boardState[row][col] = 'X';
-            updateButtonGraphic(row, col, 'X');
+            boardState[row][col] = 'O';
+            updateButtonGraphic(row, col, 'O');
             gridButtons[row][col].setDisable(true);
 
-            if (checkWin('X')) {
+            if (checkWin('O')) {
                 // statusLabel.setText(playerName.toUpperCase() + " GANA!");
                 // statusLabel.getStyleClass().remove("status-label-lose");
                 // statusLabel.getStyleClass().remove("status-label-draw");
@@ -374,11 +375,11 @@ public class GameViewOffline {
             col = random.nextInt(3);
         } while (boardState[row][col] != ' ');
 
-        boardState[row][col] = 'O';
-        updateButtonGraphic(row, col, 'O');
+        boardState[row][col] = 'X';
+        updateButtonGraphic(row, col, 'X');
         gridButtons[row][col].setDisable(true);
 
-        if (checkWin('O')) {
+        if (checkWin('X')) {
             // statusLabel.setText("PC GANA!");
             // statusLabel.getStyleClass().remove("status-label-win");
             // statusLabel.getStyleClass().remove("status-label-draw");
@@ -474,21 +475,7 @@ public class GameViewOffline {
     }
 
     public void show() {
-        Stage stage = new Stage();
-        stage.setTitle("Tic Tac Toe - Jugando contra PC");
-        stage.setScene(scene);
-        WindowUtils.configurarVentanaPantallaCompleta(stage, true);
-
-        stage.setOnCloseRequest(e -> {
-            if (primaryStage != null) {
-                primaryStage.show();
-            }
-        });
-
-        if (primaryStage != null) {
-            primaryStage.hide();
-        }
-
-        stage.show();
+        App.getPrimaryStage().setScene(scene);
+        WindowUtils.configurarVentanaPantallaCompleta(this.primaryStage);
     }
 }
