@@ -69,7 +69,7 @@ public class LoginView {
         VBox.setMargin(nameField, new Insets(0, 0, 30, 0));
 
         scene = new Scene(mainLayout, 900, 700);
-        scene.getStylesheets().add(getClass().getResource("/styles/login.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/Styles/login.css").toExternalForm());
 
         // Configurar acciones de los botones
         configurarAccionesBotones();

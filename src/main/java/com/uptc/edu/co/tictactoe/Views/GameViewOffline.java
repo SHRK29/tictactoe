@@ -57,7 +57,7 @@ public class GameViewOffline {
         rootLayout = createLayout();
         scene = new Scene(rootLayout, 1000, 700);
         initializeGame();
-        scene.getStylesheets().add(getClass().getResource("/styles/game.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/Styles/game.css").toExternalForm());
     }
 
     private void loadImages() {
@@ -222,21 +222,28 @@ public class GameViewOffline {
 
         double totalWidth = 3 * CELL_SIZE + 2 * GRID_GAP;
         double totalHeight = 3 * CELL_SIZE + 2 * GRID_GAP;
-        double verticalOffset = 2;
 
-        // Líneas verticales
-        double verticalLineX1 = CELL_SIZE + GRID_GAP / 2;
-        double verticalLineX2 = 2 * CELL_SIZE + GRID_GAP * 1.5;
-        Line verticalLine1 = createNeonLine(false, verticalLineX1, verticalOffset, verticalLineX1, totalHeight);
-        Line verticalLine2 = createNeonLine(false, verticalLineX2, verticalOffset, verticalLineX2, totalHeight);
+        // Líneas verticales (entre columnas)
+        double verticalLineX1 = CELL_SIZE + GRID_GAP / 2.0;
+        double verticalLineX2 = 2 * CELL_SIZE + 1.5 * GRID_GAP;
 
-        // Líneas horizontales
-        double horizontalLineY1 = CELL_SIZE + GRID_GAP / 2 + verticalOffset;
-        double horizontalLineY2 = 2 * CELL_SIZE + GRID_GAP * 1.5 + verticalOffset;
+        Line verticalLine1 = createNeonLine(false, verticalLineX1, 0, verticalLineX1, totalHeight);
+        Line verticalLine2 = createNeonLine(false, verticalLineX2, 0, verticalLineX2, totalHeight);
+
+        // Líneas horizontales (entre filas)
+        double horizontalLineY1 = CELL_SIZE + GRID_GAP / 2.0;
+        double horizontalLineY2 = 2 * CELL_SIZE + 1.5 * GRID_GAP;
+
         Line horizontalLine1 = createNeonLine(true, 0, horizontalLineY1, totalWidth, horizontalLineY1);
         Line horizontalLine2 = createNeonLine(true, 0, horizontalLineY2, totalWidth, horizontalLineY2);
 
         pane.getChildren().addAll(verticalLine1, verticalLine2, horizontalLine1, horizontalLine2);
+
+        // Establecer tamaño fijo del pane para que coincida con el GridPane
+        pane.setPrefSize(totalWidth, totalHeight);
+        pane.setMaxSize(totalWidth, totalHeight);
+        pane.setMinSize(totalWidth, totalHeight);
+
         return pane;
     }
 

@@ -1,6 +1,7 @@
 package com.uptc.edu.co.tictactoe;
 
 import com.uptc.edu.co.tictactoe.Network.ClientConnection;
+import com.uptc.edu.co.tictactoe.Utils.WindowUtils;
 import com.uptc.edu.co.tictactoe.Views.LoginView;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -18,8 +19,13 @@ public class App extends Application {
     }
 
     private void initializeNetwork() {
-        clientConnection = new ClientConnection();
-        clientConnection.startConnection("localhost", 5555);
+        try {
+            clientConnection = new ClientConnection();
+            clientConnection.startConnection("localhost", 5555);
+
+        } catch (Exception e) {
+            System.out.println("No se ha podido realizar la conexión al servidor");
+        }
     }
 
     public static void mostrarLoginView() {
@@ -30,6 +36,7 @@ public class App extends Application {
     public static void cambiarEscena(Scene nuevaEscena, String titulo) {
         primaryStage.setScene(nuevaEscena);
         primaryStage.setTitle(titulo);
+        WindowUtils.configurarVentanaPantallaCompleta(primaryStage);
         primaryStage.show();
     }
 
