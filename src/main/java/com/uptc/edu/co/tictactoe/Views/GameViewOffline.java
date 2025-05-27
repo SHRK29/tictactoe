@@ -1,8 +1,6 @@
 package com.uptc.edu.co.tictactoe.Views;
 
 import com.uptc.edu.co.tictactoe.App;
-import com.uptc.edu.co.tictactoe.Utils.WindowUtils;
-
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -17,18 +15,14 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.StrokeLineCap;
-import javafx.stage.Stage;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Random;
 
 public class GameViewOffline {
-
     private String playerName;
-    private Scene scene;
     private BorderPane rootLayout;
-    private Stage primaryStage;
+    private Scene scene;
     private GridPane gameGrid;
     private Button[][] gridButtons = new Button[3][3];
 
@@ -57,14 +51,13 @@ public class GameViewOffline {
     private final double GRID_GAP = 15.0;
     private final double LINE_THICKNESS = 4.0;
 
-    public GameViewOffline(Stage appStage, String playerName) {
-        this.primaryStage = appStage;
+    public GameViewOffline(String playerName) {
         this.playerName = playerName;
         loadImages();
         rootLayout = createLayout();
-        scene = new Scene(rootLayout);
-        scene.getStylesheets().add(getClass().getResource("/Styles/game.css").toExternalForm());
+        scene = new Scene(rootLayout, 1000, 700);
         initializeGame();
+        scene.getStylesheets().add(getClass().getResource("/styles/game.css").toExternalForm());
     }
 
     private void loadImages() {
@@ -107,11 +100,6 @@ public class GameViewOffline {
         }
         playerTurn = true;
         gameOver = false;
-        // statusLabel.setText("Turno de: " + playerName.toUpperCase());
-        // statusLabel.getStyleClass().remove("status-label-win");
-        // statusLabel.getStyleClass().remove("status-label-lose");
-        // statusLabel.getStyleClass().remove("status-label-draw");
-        // statusLabel.getStyleClass().add("status-label");
     }
 
     private BorderPane createLayout() {
@@ -119,12 +107,22 @@ public class GameViewOffline {
         layout.getStyleClass().add("game-background");
         layout.setPadding(new Insets(20));
 
-        // ----------------- HEADER -----------------
+        // Header
+        layout.setTop(createHeader());
+        // Centro del juego
+        layout.setCenter(createGameCenter());
+        // Footer
+        layout.setBottom(createFooter());
+
+        return layout;
+    }
+
+    private HBox createHeader() {
         HBox headerBox = new HBox();
         headerBox.getStyleClass().add("header-container");
         headerBox.setMaxWidth(Double.MAX_VALUE);
 
-        // Jugador 1 (Imagen + Nombre)
+        // Jugador 1
         HBox player1Box = new HBox(20);
         player1Box.getStyleClass().add("player-box");
         ImageView player1Icon = createImageView(playerIconImage, 240);
@@ -137,7 +135,7 @@ public class GameViewOffline {
         Label vsLabel = new Label("VS");
         vsLabel.getStyleClass().add("vs-container");
 
-        // Jugador 2 (Nombre + Imagen)
+        // PC
         HBox player2Box = new HBox(20);
         player2Box.getStyleClass().add("player-box");
         Label player2Label = new Label("PC");
@@ -147,7 +145,7 @@ public class GameViewOffline {
         player2Icon.getStyleClass().add("player-icon");
         player2Box.getChildren().addAll(player2Label, player2Icon);
 
-        // Espaciadores dinámicos
+        // Espaciadores
         Region leftSpacer = new Region();
         Region rightSpacer = new Region();
         HBox.setHgrow(leftSpacer, Priority.ALWAYS);
@@ -160,9 +158,10 @@ public class GameViewOffline {
                 player2Box,
                 rightSpacer);
 
-        layout.setTop(headerBox);
+        return headerBox;
+    }
 
-        // ----------------- SECCIÓN CENTRAL (TABLERO) -----------------
+    private HBox createGameCenter() {
         HBox centerContainer = new HBox(40);
         centerContainer.setAlignment(Pos.CENTER);
 
@@ -174,43 +173,38 @@ public class GameViewOffline {
         Pane linePane = createLinePane();
         gameGrid = createGameGridPane();
         StackPane boardPane = new StackPane();
-        boardPane.getStyleClass().add("board-container"); // Aplicar nueva clase
-        boardPane.setAlignment(Pos.CENTER); // Centrar contenido
-        linePane.setMouseTransparent(true);
-        boardPane.getChildren().addAll(gameGrid, linePane);
+        boardPane.getStyleClass().add("board-container");
+        boardPane.setAlignment(Pos.CENTER);
+        boardPane.getChildren().addAll(linePane, gameGrid);
 
         // Logo X
         ImageView xLogo = createImageView(imageX, 100);
         xLogo.setEffect(createNeonEffect(Color.rgb(0, 255, 238)));
 
         centerContainer.getChildren().addAll(oLogo, boardPane, xLogo);
-        layout.setCenter(centerContainer);
+        return centerContainer;
+    }
 
-        // ----------------- SECCIÓN INFERIOR (FOOTER) -----------------
+    private HBox createFooter() {
         HBox footerBox = new HBox();
-        footerBox.setAlignment(Pos.CENTER_LEFT); // Alinear contenido a los extremos
+        footerBox.setAlignment(Pos.CENTER_LEFT);
         footerBox.setPadding(new Insets(20, 50, 20, 50));
-        footerBox.setMaxWidth(Double.MAX_VALUE); // Ocupar todo el ancho disponible
+        footerBox.setMaxWidth(Double.MAX_VALUE);
 
-        // Título izquierda
         Label titleLabel = new Label("TIC TAC TOE");
         titleLabel.getStyleClass().add("main-title");
 
-        // Espaciador para empujar el botón a la derecha
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // Botón Home derecha
         Button homeButton = new Button();
         ImageView homeIcon = createImageView(homeIconImage, ICON_SIZE_HOME);
         homeButton.setGraphic(homeIcon);
         homeButton.getStyleClass().add("home-button");
-        homeButton.setOnAction(e -> navigateToLogin());
+        homeButton.setOnAction(e -> App.mostrarLoginView());
 
-        footerBox.getChildren().addAll(titleLabel, spacer, homeButton); // Agregar espaciador en medio
-        layout.setBottom(footerBox);
-
-        return layout;
+        footerBox.getChildren().addAll(titleLabel, spacer, homeButton);
+        return footerBox;
     }
 
     private DropShadow createNeonEffect(Color color) {
@@ -222,40 +216,27 @@ public class GameViewOffline {
         return glow;
     }
 
-    private void navigateToLogin() {
-        LoginView loginView = new LoginView(this.primaryStage);
-        App.getPrimaryStage().setScene(loginView.getScene());
-        WindowUtils.configurarVentanaPantallaCompleta(this.primaryStage);
-    }
-
     private Pane createLinePane() {
         Pane pane = new Pane();
         pane.getStyleClass().add("line-pane");
 
         double totalWidth = 3 * CELL_SIZE + 2 * GRID_GAP;
         double totalHeight = 3 * CELL_SIZE + 2 * GRID_GAP;
+        double verticalOffset = 2;
 
-        // Líneas verticales (entre columnas)
-        double verticalLineX1 = CELL_SIZE + GRID_GAP / 2.0;
-        double verticalLineX2 = 2 * CELL_SIZE + 1.5 * GRID_GAP;
+        // Líneas verticales
+        double verticalLineX1 = CELL_SIZE + GRID_GAP / 2;
+        double verticalLineX2 = 2 * CELL_SIZE + GRID_GAP * 1.5;
+        Line verticalLine1 = createNeonLine(false, verticalLineX1, verticalOffset, verticalLineX1, totalHeight);
+        Line verticalLine2 = createNeonLine(false, verticalLineX2, verticalOffset, verticalLineX2, totalHeight);
 
-        Line verticalLine1 = createNeonLine(false, verticalLineX1, 0, verticalLineX1, totalHeight);
-        Line verticalLine2 = createNeonLine(false, verticalLineX2, 0, verticalLineX2, totalHeight);
-
-        // Líneas horizontales (entre filas)
-        double horizontalLineY1 = CELL_SIZE + GRID_GAP / 2.0;
-        double horizontalLineY2 = 2 * CELL_SIZE + 1.5 * GRID_GAP;
-
+        // Líneas horizontales
+        double horizontalLineY1 = CELL_SIZE + GRID_GAP / 2 + verticalOffset;
+        double horizontalLineY2 = 2 * CELL_SIZE + GRID_GAP * 1.5 + verticalOffset;
         Line horizontalLine1 = createNeonLine(true, 0, horizontalLineY1, totalWidth, horizontalLineY1);
         Line horizontalLine2 = createNeonLine(true, 0, horizontalLineY2, totalWidth, horizontalLineY2);
 
         pane.getChildren().addAll(verticalLine1, verticalLine2, horizontalLine1, horizontalLine2);
-
-        // Establecer tamaño fijo del pane para que coincida con el GridPane
-        pane.setPrefSize(totalWidth, totalHeight);
-        pane.setMaxSize(totalWidth, totalHeight);
-        pane.setMinSize(totalWidth, totalHeight);
-
         return pane;
     }
 
@@ -286,7 +267,6 @@ public class GameViewOffline {
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 3; col++) {
                 Button cellButton = new Button();
-                // Tamaño exacto y consistente
                 cellButton.setMinSize(CELL_SIZE, CELL_SIZE);
                 cellButton.setPrefSize(CELL_SIZE, CELL_SIZE);
                 cellButton.setMaxSize(CELL_SIZE, CELL_SIZE);
@@ -310,39 +290,22 @@ public class GameViewOffline {
             imageView.setFitWidth(fitSize);
             imageView.setFitHeight(fitSize);
             imageView.setPreserveRatio(true);
-        } else {
-            System.err.println("Advertencia: Imagen no cargada o inválida.");
-            return new ImageView();
         }
         return imageView;
     }
 
     private void handleCellClick(int row, int col) {
         if (boardState[row][col] == ' ' && !gameOver && playerTurn) {
-            boardState[row][col] = 'O';
-            updateButtonGraphic(row, col, 'O');
+            boardState[row][col] = 'X';
+            updateButtonGraphic(row, col, 'X');
             gridButtons[row][col].setDisable(true);
 
-            if (checkWin('O')) {
-                // statusLabel.setText(playerName.toUpperCase() + " GANA!");
-                // statusLabel.getStyleClass().remove("status-label-lose");
-                // statusLabel.getStyleClass().remove("status-label-draw");
-                // statusLabel.getStyleClass().add("status-label-win");
+            if (checkWin('X')) {
                 gameOver = true;
             } else if (checkDraw()) {
-                // statusLabel.setText("EMPATE!");
-                // statusLabel.getStyleClass().remove("status-label-lose");
-                // statusLabel.getStyleClass().remove("status-label-win");
-                // statusLabel.getStyleClass().add("status-label-draw");
                 gameOver = true;
             } else {
                 playerTurn = false;
-                // statusLabel.setText("Turno de: PC");
-                // statusLabel.getStyleClass().remove("status-label-win");
-                // statusLabel.getStyleClass().remove("status-label-lose");
-                // statusLabel.getStyleClass().remove("status-label-draw");
-                // statusLabel.getStyleClass().add("status-label");
-
                 new Thread(() -> {
                     try {
                         Thread.sleep(500);
@@ -365,29 +328,16 @@ public class GameViewOffline {
             col = random.nextInt(3);
         } while (boardState[row][col] != ' ');
 
-        boardState[row][col] = 'X';
-        updateButtonGraphic(row, col, 'X');
+        boardState[row][col] = 'O';
+        updateButtonGraphic(row, col, 'O');
         gridButtons[row][col].setDisable(true);
 
-        if (checkWin('X')) {
-            // statusLabel.setText("PC GANA!");
-            // statusLabel.getStyleClass().remove("status-label-win");
-            // statusLabel.getStyleClass().remove("status-label-draw");
-            // statusLabel.getStyleClass().add("status-label-lose");
+        if (checkWin('O')) {
             gameOver = true;
         } else if (checkDraw()) {
-            // statusLabel.setText("EMPATE!");
-            // statusLabel.getStyleClass().remove("status-label-lose");
-            // statusLabel.getStyleClass().remove("status-label-win");
-            // statusLabel.getStyleClass().add("status-label-draw");
             gameOver = true;
         } else {
             playerTurn = true;
-            // statusLabel.setText("Turno de: " + playerName.toUpperCase());
-            // statusLabel.getStyleClass().remove("status-label-win");
-            // statusLabel.getStyleClass().remove("status-label-lose");
-            // statusLabel.getStyleClass().remove("status-label-draw");
-            // statusLabel.getStyleClass().add("status-label");
         }
     }
 
@@ -397,21 +347,10 @@ public class GameViewOffline {
 
         if (player == 'X' && imageX != null) {
             imageView = createImageView(imageX, graphicSize);
-            DropShadow glowX = new DropShadow();
-            glowX.setColor(Color.rgb(0, 255, 238, 0.9));
-            glowX.setRadius(30);
-            glowX.setSpread(0.5);
-            glowX.setInput(new Bloom(0.9));
-            imageView.setEffect(glowX);
-
+            imageView.setEffect(createNeonEffect(Color.rgb(0, 255, 238)));
         } else if (player == 'O' && imageO != null) {
             imageView = createImageView(imageO, graphicSize);
-            DropShadow glowO = new DropShadow();
-            glowO.setColor(Color.rgb(255, 45, 241, 0.9));
-            glowO.setRadius(30);
-            glowO.setSpread(0.5);
-            glowO.setInput(new Bloom(0.9));
-            imageView.setEffect(glowO);
+            imageView.setEffect(createNeonEffect(Color.rgb(255, 45, 241)));
         }
 
         if (imageView != null) {
@@ -443,10 +382,7 @@ public class GameViewOffline {
         if (boardState[0][0] == player && boardState[1][1] == player && boardState[2][2] == player) {
             return true;
         }
-        if (boardState[0][2] == player && boardState[1][1] == player && boardState[2][0] == player) {
-            return true;
-        }
-        return false;
+        return boardState[0][2] == player && boardState[1][1] == player && boardState[2][0] == player;
     }
 
     private boolean checkDraw() {
@@ -465,7 +401,11 @@ public class GameViewOffline {
     }
 
     public void show() {
-        App.getPrimaryStage().setScene(scene);
-        WindowUtils.configurarVentanaPantallaCompleta(this.primaryStage);
+        App.cambiarEscena(scene, "Tic Tac Toe - Jugando contra PC");
+
+        // Configurar eventos para mantener pantalla completa
+        scene.setOnKeyPressed(event -> {
+            // Puedes agregar atajos de teclado aquí si lo deseas
+        });
     }
 }
