@@ -11,19 +11,18 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.paint.Color;
 import javafx.scene.effect.DropShadow;
-import javafx.stage.Stage;
-
 import com.uptc.edu.co.tictactoe.App;
 import com.uptc.edu.co.tictactoe.Utils.FontUtils;
 
 public class ConnectionErrorView {
-    private Stage primaryStage;
+    private Scene scene;
 
-    public ConnectionErrorView(Stage primaryStage) {
-        this.primaryStage = primaryStage;
+    public ConnectionErrorView() {
+        // Configurar la escena
+        configurarEscena();
     }
 
-    public void show() {
+    private void configurarEscena() {
         Font titleFont = FontUtils.cargarFuenteBaloo(42);
         Font subtitleFont = FontUtils.cargarFuenteBaloo(24);
         Font buttonFont = FontUtils.cargarFuenteBaloo(18);
@@ -41,24 +40,50 @@ public class ConnectionErrorView {
         ImageView icon = new ImageView(new Image(getClass().getResourceAsStream("/Icons/ErrorClose.png")));
         icon.setFitWidth(300);
         icon.setFitHeight(300);
+        icon.setPreserveRatio(true);
 
-        Button retryButton = new Button("REINTENTAR");
-        retryButton.setFont(buttonFont);
-        retryButton.getStyleClass().add("neon-button");
-        retryButton.setOnAction(e -> {
-            LoginView loginView = new LoginView(this.primaryStage);
-            App.getPrimaryStage().setScene(loginView.getScene());
-        });
+        Button retryButton = crearBotonReintentar(buttonFont);
 
         VBox root = new VBox(25, title, subtitle, icon, retryButton);
         root.setAlignment(Pos.CENTER);
         root.setPadding(new Insets(40));
         root.getStyleClass().add("error-root");
 
-        Scene scene = new Scene(root, 800, 600);
+        this.scene = new Scene(root, 800, 600);
         scene.getStylesheets().add(getClass().getResource("/styles/error.css").toExternalForm());
+    }
 
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("Error de Conexión");
+    private Button crearBotonReintentar(Font font) {
+        Button button = new Button("REINTENTAR");
+        button.setFont(font);
+        button.getStyleClass().add("neon-button");
+        button.setPrefSize(280, 60);
+        
+        button.setOnMouseEntered(e -> {
+            button.setStyle("-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #410445, #2D0230); " +
+                          "-fx-text-fill: #FF2DF1;");
+            button.setEffect(new DropShadow(15, Color.web("#F6DC43")));
+            button.setTranslateY(-2);
+        });
+        
+        button.setOnMouseExited(e -> {
+            button.setStyle("");
+            button.setEffect(new DropShadow(10, Color.web("#F6DC43")));
+            button.setTranslateY(0);
+        });
+        
+        button.setOnAction(e -> {
+            App.mostrarLoginView();
+        });
+        
+        return button;
+    }
+
+    public void show() {
+        App.cambiarEscena(scene, "Error de Conexión");
+    }
+
+    public Scene getScene() {
+        return scene;
     }
 }

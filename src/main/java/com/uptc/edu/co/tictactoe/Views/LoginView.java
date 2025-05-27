@@ -9,30 +9,22 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
 import javafx.application.Platform;
-import com.uptc.edu.co.tictactoe.Views.HowToPlayView;
 import com.uptc.edu.co.tictactoe.App;
 import com.uptc.edu.co.tictactoe.Utils.FontUtils;
-import com.uptc.edu.co.tictactoe.Utils.WindowUtils;
-
-import java.io.InputStream;
 
 public class LoginView {
 
     private Scene scene;
     private TextField nameField;
-    private Stage primaryStage;
     private Button onlineButton;
     private Button vsPcButton;
     private Button howToPlayButton;
     private Button exitButton;
 
-    public LoginView(Stage appStage) {
-        this.primaryStage = appStage;
-        WindowUtils.configurarVentanaPantallaCompleta(this.primaryStage);
+    public LoginView() {
+        // Cargar fuentes con manejo de errores
         Font balooFont = FontUtils.cargarFuenteBaloo(110);
         Font balooFontMedium = FontUtils.cargarFuenteBaloo(22);
         Font balooFontSmall = FontUtils.cargarFuenteBaloo(18);
@@ -77,32 +69,41 @@ public class LoginView {
         VBox.setMargin(nameField, new Insets(0, 0, 30, 0));
 
         scene = new Scene(mainLayout, 900, 700);
-        scene.getStylesheets().add(getClass().getResource("/Styles/login.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/styles/login.css").toExternalForm());
 
-        // Acciones de los botones
+        // Configurar acciones de los botones
+        configurarAccionesBotones();
+    }
 
-        // Acción para botón ¿Cómo jugar?
-
+    private void configurarAccionesBotones() {
+        
         howToPlayButton.setOnAction(e -> {
-            HowToPlayView howToPlayView = new HowToPlayView(primaryStage);
-            App.getPrimaryStage().setScene(howToPlayView.getScene());
-            WindowUtils.configurarVentanaPantallaCompleta(this.primaryStage);
+            HowToPlayView howToPlayView = new HowToPlayView();
+            App.cambiarEscena(howToPlayView.getScene(), "Cómo Jugar - Tic Tac Toe");
+        });
+
+        // Acción para botón Jugar contra PC
+        vsPcButton.setOnAction(e -> {
+            String playerName = nameField.getText().trim();
+            if (playerName.isEmpty()) {
+                playerName = "Jugador 1"; // Nombre por defecto
+            }
+            GameViewOffline gameView = new GameViewOffline(playerName);
+            App.cambiarEscena(gameView.getScene(), "Tic Tac Toe - Modo Local");
+        });
+
+        // Acción para botón Jugar Online (ejemplo)
+        onlineButton.setOnAction(e -> {
+            // Implementación para modo online
+            String playerName = nameField.getText().trim();
+            if (playerName.isEmpty()) {
+                playerName = "Jugador Online";
+            }
+            // Aquí iría la lógica para el modo online
         });
 
         // Acción para botón Salir
-        exitButton.setOnAction(e -> {
-            Platform.exit(); // Cierra la aplicación
-        });
-
-        vsPcButton.setOnAction(e -> {
-            String playerName = nameField.getText().trim();
-            if (playerName.isEmpty())
-                playerName = "Jugador 1";
-
-            GameViewOffline gameView = new GameViewOffline(this.primaryStage, playerName);
-            gameView.show();
-        });
-
+        exitButton.setOnAction(e -> Platform.exit());
     }
 
     private Button createStyledButton(String text, Font font) {
@@ -138,6 +139,7 @@ public class LoginView {
         return scene;
     }
 
+    // Getters para los componentes (si son necesarios)
     public TextField getNameField() {
         return nameField;
     }
