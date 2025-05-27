@@ -1,7 +1,6 @@
 package com.uptc.edu.co.tictactoe.Views;
 
 import com.uptc.edu.co.tictactoe.App;
-import com.uptc.edu.co.tictactoe.Utils.FontUtils;
 import com.uptc.edu.co.tictactoe.Utils.WindowUtils;
 
 import javafx.application.Platform;
@@ -32,9 +31,6 @@ public class GameViewOffline {
     private Stage primaryStage;
     private GridPane gameGrid;
     private Button[][] gridButtons = new Button[3][3];
-    private Label player1Label;
-    private Label player2Label;
-    private Label ticTacToeLabel;
 
     // Lógica del juego
     private char[][] boardState = new char[3][3];
@@ -48,7 +44,6 @@ public class GameViewOffline {
     private Image homeIconImage;
     private Image imageX;
     private Image imageO;
-    private Image vsImage;
 
     // Rutas a Imágenes
     private final String PATH_PLAYER_ICON = "/Icons/BluePlayer.png";
@@ -56,11 +51,7 @@ public class GameViewOffline {
     private final String PATH_HOME_ICON = "/Icons/Home.png";
     private final String PATH_X_IMAGE = "/Icons/X.png";
     private final String PATH_O_IMAGE = "/Icons/O.png";
-    private final String PATH_VS_ICON = "/Icons/vs.png";
 
-    // Constantes de Diseño
-    private final double ICON_SIZE_PLAYER = 60.0;
-    private final double ICON_SIZE_VS = 100.0;
     private final double ICON_SIZE_HOME = 120.0;
     private final double CELL_SIZE = 140.0;
     private final double GRID_GAP = 15.0;
@@ -83,7 +74,6 @@ public class GameViewOffline {
             homeIconImage = cargarImagenSegura(PATH_HOME_ICON);
             imageX = cargarImagenSegura(PATH_X_IMAGE);
             imageO = cargarImagenSegura(PATH_O_IMAGE);
-            vsImage = cargarImagenSegura(PATH_VS_ICON);
         } catch (Exception e) {
             System.err.println("Error crítico al cargar recursos de imagen: " + e.getMessage());
             Platform.exit();

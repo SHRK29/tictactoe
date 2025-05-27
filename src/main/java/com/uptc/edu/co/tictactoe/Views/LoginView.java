@@ -9,16 +9,12 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.application.Platform;
-import com.uptc.edu.co.tictactoe.Views.HowToPlayView;
 import com.uptc.edu.co.tictactoe.App;
 import com.uptc.edu.co.tictactoe.Utils.FontUtils;
 import com.uptc.edu.co.tictactoe.Utils.WindowUtils;
-
-import java.io.InputStream;
 
 public class LoginView {
 
