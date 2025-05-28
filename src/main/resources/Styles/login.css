@@ -61,4 +61,30 @@
     -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.6), 15, 0, 0, 3);
     -fx-text-fill: #FF2DF1;
     -fx-translate-y: -1;
+
+}
+/* Estilos mejorados para el botón de historial */
+.score-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 50%;
+    -fx-border-radius: 50%;
+    -fx-border-color: transparent;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.3, 0, 1);
+}
+
+.score-button:hover {
+    -fx-effect: dropshadow(gaussian, #F6DC43, 20, 0.5, 0, 0);
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
+}
+
+.score-button:pressed {
+    -fx-translate-y: 2px;
+    -fx-effect: dropshadow(gaussian, #F6DC43, 10, 0.3, 0, 0);
+}
+
+/* Asegurar que el fondo sea consistente */
+.background {
+    -fx-background-color: linear-gradient(to bottom, #1a1a2e, #16213e);
 }
