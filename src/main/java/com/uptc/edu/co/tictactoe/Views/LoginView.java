@@ -15,6 +15,7 @@ import javafx.scene.text.Text;
 import javafx.application.Platform;
 import com.uptc.edu.co.tictactoe.App;
 import com.uptc.edu.co.tictactoe.Utils.FontUtils;
+import com.uptc.edu.co.tictactoe.Network.ClientConnection;
 
 public class LoginView {
 
@@ -24,6 +25,8 @@ public class LoginView {
     private Button vsPcButton;
     private Button howToPlayButton;
     private Button exitButton;
+    private final String SERVER_IP = "localhost"; // Cambia esto según tu configuración
+    private final int SERVER_PORT = 8080; // Cambia esto según tu configuración
 
     public LoginView() {
         // Cargar fuentes con manejo de errores
@@ -72,11 +75,11 @@ public class LoginView {
 
         // Crear botón de historial de puntuaciones mejorado
         Button scoreButton = createScoreButton();
-        
+
         // Usar StackPane como contenedor raíz para superponer elementos
         StackPane rootLayout = new StackPane();
         rootLayout.getChildren().add(mainLayout);
-        
+
         // Añadir el botón de score flotante
         StackPane.setAlignment(scoreButton, Pos.BOTTOM_RIGHT);
         StackPane.setMargin(scoreButton, new Insets(0, 30, 30, 0));
@@ -87,7 +90,7 @@ public class LoginView {
 
         // Configurar acciones de los botones
         configurarAccionesBotones();
-        
+
         // Configurar acción del botón de historial
         scoreButton.setOnAction(e -> {
             ScoreView scoreView = new ScoreView();
@@ -100,15 +103,15 @@ public class LoginView {
 
     private Button createScoreButton() {
         ImageView scoreIcon = new ImageView(new Image(getClass().getResourceAsStream("/Icons/ScoreIcon.png")));
-        scoreIcon.setFitHeight(185);  // Tamaño aumentado
-        scoreIcon.setFitWidth(185);   // Tamaño aumentado
-        
+        scoreIcon.setFitHeight(185);
+        scoreIcon.setFitWidth(185);
+
         Button scoreButton = new Button();
         scoreButton.setGraphic(scoreIcon);
         scoreButton.getStyleClass().add("score-button");
         scoreButton.setPadding(new Insets(5));
-        scoreButton.setBackground(Background.EMPTY); // Fondo transparente
-        
+        scoreButton.setBackground(Background.EMPTY);
+
         return scoreButton;
     }
 
@@ -128,11 +131,38 @@ public class LoginView {
         });
 
         onlineButton.setOnAction(e -> {
-            String playerName = nameField.getText().trim();
-            if (playerName.isEmpty()) {
-                playerName = "Jugador Online";
-            }
-            // Lógica para el modo online
+            final String playerName = nameField.getText().trim().isEmpty() ? 
+                "Jugador Online" : nameField.getText().trim();
+            
+            // Mostrar la animación de carga
+            LoadingView loadingView = new LoadingView();
+            loadingView.show();
+
+            // Iniciar conexión en un hilo separado
+            new Thread(() -> {
+                ClientConnection connection = new ClientConnection();
+                connection.startConnection(SERVER_IP, SERVER_PORT);
+
+                if (connection.receiveMessage() != null) {
+                    // Si la conexión es exitosa
+                    Platform.runLater(() -> {
+                        // Enviar el nombre del jugador al servidor
+                        connection.sendMessage("NAME " + playerName);
+                        
+                        // Crear y mostrar la vista del juego online
+                        GameViewOnLine gameView = new GameViewOnLine(playerName, connection);
+                        App.cambiarEscena(gameView.getScene(), "Tic Tac Toe - Modo Online");
+                    });
+                } else {
+                    // Si la conexión falla
+                    Platform.runLater(() -> {
+                        // Volver a la pantalla de login en caso de error
+                        App.cambiarEscena(scene, "Tic Tac Toe - Login");
+                        // Mostrar mensaje de error (puedes implementar una vista de error)
+                        System.err.println("No se pudo conectar al servidor");
+                    });
+                }
+            }).start();
         });
 
         exitButton.setOnAction(e -> Platform.exit());

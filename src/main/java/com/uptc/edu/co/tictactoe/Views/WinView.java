@@ -21,12 +21,12 @@ public class WinView {
     public WinView(String winnerName, boolean isDraw, Image winnerIcon) {
         // Cargar fuentes
         Font balooFontLarge = FontUtils.cargarFuenteBaloo(60);
-        Font balooFontMedium = FontUtils.cargarFuenteBaloo(28);
+        Font balooFontMedium = FontUtils.cargarFuenteBaloo(22);
         
         // Layout principal
         VBox mainLayout = new VBox(40);
         mainLayout.setAlignment(Pos.CENTER);
-        mainLayout.getStyleClass().add("win-background");
+        mainLayout.getStyleClass().add("background");
         mainLayout.setPadding(new Insets(40));
         
         // Mensaje de resultado
@@ -51,12 +51,10 @@ public class WinView {
         buttonBox.setAlignment(Pos.CENTER);
         
         // Botón Jugar de nuevo
-        playAgainButton = new Button("JUGAR DE NUEVO");
-        styleButton(playAgainButton, balooFontMedium);
+        playAgainButton = createStyledButton("JUGAR DE NUEVO", balooFontMedium);
         
         // Botón Menú principal
-        mainMenuButton = new Button("MENÚ PRINCIPAL");
-        styleButton(mainMenuButton, balooFontMedium);
+        mainMenuButton = createStyledButton("MENÚ PRINCIPAL", balooFontMedium);
         
         buttonBox.getChildren().addAll(playAgainButton, mainMenuButton);
         
@@ -64,28 +62,39 @@ public class WinView {
         mainLayout.getChildren().addAll(resultText, winnerImageView, buttonBox);
         
         scene = new Scene(mainLayout, 900, 700);
-        scene.getStylesheets().add(getClass().getResource("/Styles/win.css").toExternalForm());
+        scene.getStylesheets().addAll(
+            getClass().getResource("/Styles/win.css").toExternalForm(),
+            getClass().getResource("/Styles/login.css").toExternalForm()
+        );
     }
     
-    private void styleButton(Button button, Font font) {
+    private Button createStyledButton(String text, Font font) {
+        Button button = new Button(text);
         button.setFont(font);
-        button.getStyleClass().add("win-button");
+        button.getStyleClass().add("neon-button");
         button.setPrefSize(280, 60);
-        
+
         button.setOnMouseEntered(e -> {
             button.setEffect(new DropShadow(15, Color.web("#F6DC43")));
             button.setTranslateY(-2);
         });
-        
+
         button.setOnMouseExited(e -> {
             button.setEffect(new DropShadow(10, Color.web("#F6DC43")));
             button.setTranslateY(0);
         });
-        
+
         button.setOnMousePressed(e -> {
             button.setEffect(new DropShadow(5, Color.web("#F6DC43")));
             button.setTranslateY(1);
         });
+
+        button.setOnMouseReleased(e -> {
+            button.setEffect(new DropShadow(10, Color.web("#F6DC43")));
+            button.setTranslateY(0);
+        });
+
+        return button;
     }
     
     public Scene getScene() {

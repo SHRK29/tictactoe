@@ -323,6 +323,7 @@ public class GameViewOffline {
                 gameOver = true;
                 drawWinningLine();
             } else if (checkDraw()) {
+                showWinScreen(' ');
                 return;
             } else {
                 playerTurn = false;
@@ -356,6 +357,7 @@ public class GameViewOffline {
             gameOver = true;
             drawWinningLine();
         } else if (checkDraw()) {
+            showWinScreen(' ');
             return;
         } else {
             playerTurn = true;
@@ -391,14 +393,12 @@ public class GameViewOffline {
         for (int i = 0; i < 3; i++) {
             if (boardState[i][0] == player && boardState[i][1] == player && boardState[i][2] == player) {
                 winningCombination = new int[] { i, 0, i, 2, 0, i }; // tipo 0 = fila
-                showWinScreen(player);
                 return true;
             }
         }
         // Comprobar columnas
         for (int j = 0; j < 3; j++) {
             if (boardState[0][j] == player && boardState[1][j] == player && boardState[2][j] == player) {
-                showWinScreen(player);
                 winningCombination = new int[] { 0, j, 2, j, 1, j }; // tipo 1 = columna
                 return true;
             }
@@ -411,14 +411,9 @@ public class GameViewOffline {
         // Comprobar diagonal secundaria
         if (boardState[0][2] == player && boardState[1][1] == player && boardState[2][0] == player) {
             winningCombination = new int[] { 0, 2, 2, 0, 3, 0 }; // tipo 3 = diagonal secundaria
-            showWinScreen(player);
             return true;
         }
-        if (boardState[0][2] == player && boardState[1][1] == player && boardState[2][0] == player) {
-            showWinScreen(player);
-            return true;
-        }
-        return boardState[0][2] == player && boardState[1][1] == player && boardState[2][0] == player;
+        return false;
     }
 
     private boolean checkDraw() {
@@ -505,6 +500,19 @@ public class GameViewOffline {
 
         // Agregar la línea al panel
         linePane.getChildren().add(winningLine);
+
+        // Programar la transición a la pantalla de victoria después de 0.5 segundos
+        new Thread(() -> {
+            try {
+                Thread.sleep(500);
+                Platform.runLater(() -> {
+                    char winner = boardState[startRow][startCol];
+                    showWinScreen(winner);
+                });
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     public Scene getScene() {

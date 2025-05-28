@@ -31,7 +31,7 @@ public class LoadingView {
         this.animation = createAnimation(imageView, frames);
 
         StackPane root = new StackPane(imageView);
-        root.setStyle("-fx-background-color: #1A0029;");
+        root.setStyle("-fx-background-color: #410445;");
 
         this.scene = new Scene(root, imageView.getFitWidth(), imageView.getFitHeight());
     }
