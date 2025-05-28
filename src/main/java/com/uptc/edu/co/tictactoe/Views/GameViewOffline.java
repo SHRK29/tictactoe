@@ -46,7 +46,7 @@ public class GameViewOffline {
     private final String PATH_X_IMAGE = "/Icons/X.png";
     private final String PATH_O_IMAGE = "/Icons/O.png";
 
-    private final double ICON_SIZE_HOME = 120.0;
+    private final double ICON_SIZE_HOME = 240.0;
     private final double CELL_SIZE = 140.0;
     private final double GRID_GAP = 15.0;
     private final double LINE_THICKNESS = 4.0;
@@ -166,7 +166,7 @@ public class GameViewOffline {
         centerContainer.setAlignment(Pos.CENTER);
 
         // Logo O
-        ImageView oLogo = createImageView(imageO, 100);
+        ImageView oLogo = createImageView(imageO, 250);
         oLogo.setEffect(createNeonEffect(Color.rgb(255, 45, 241)));
 
         // Tablero
@@ -178,7 +178,7 @@ public class GameViewOffline {
         boardPane.getChildren().addAll(linePane, gameGrid);
 
         // Logo X
-        ImageView xLogo = createImageView(imageX, 100);
+        ImageView xLogo = createImageView(imageX, 250);
         xLogo.setEffect(createNeonEffect(Color.rgb(0, 255, 238)));
 
         centerContainer.getChildren().addAll(oLogo, boardPane, xLogo);

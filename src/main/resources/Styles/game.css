@@ -15,7 +15,6 @@
 }
 /* ========= HEADER ========= */
 .header-container {
-  -fx-background-color: transparent;
   -fx-padding: 0;
   -fx-alignment: center;
   -fx-spacing: 40px; /* Espacio entre elementos */
@@ -33,26 +32,46 @@
   -fx-fit-height: 240px;
 }
 
-.player-name, #player2Name { /* Selector múltiple explícito */
-  -fx-font-size: 36px !important; /* Fuerza la aplicación */
-  -fx-font-weight: 800; /* Asegura grosor consistente */
+.player-name, #player2Name {
+  -fx-font-size: 28px;
+  -fx-font-weight: 900;
+  -fx-font-family: 'Baloo 2 ExtraBold';
+  -fx-min-width: 200px;
+  -fx-max-width: 200px;
+  -fx-pref-width: 200px;
+  -fx-alignment: center;
+  -fx-text-alignment: center;
+  -fx-border-color: #F6DC43;
+  -fx-border-width: 3px;
+  -fx-border-radius: 15px;
+  -fx-background-radius: 15px;
+  -fx-padding: 10px 15px;
+  -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.8), 15, 0.6, 0, 0);
 }
 
 .player-name {
-  -fx-text-fill: #FFFFFF;
-  -fx-effect: dropshadow(gaussian, rgba(0, 255, 238, 0.8), 10, 0.4, 0, 2);
+  -fx-text-fill: #FF2DF1;
+  -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.8), 8, 0.4, 0, 1);
 }
 
 #player2Name {
   -fx-text-fill: #FF2DF1;
-  -fx-effect: dropshadow(gaussian, rgba(255, 45, 241, 0.8), 10, 0.4, 0, 2);
+  -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.8), 8, 0.4, 0, 1);
 }
 
 .vs-container {
-  -fx-font-size: 54px;
-  -fx-text-fill: #F6DC43;
-  -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.9), 25, 0.5, 0, 3);
-  -fx-padding: 0 40px;
+  -fx-font-size: 72px;
+  -fx-font-weight: 900;
+  -fx-font-family: 'Baloo 2 ExtraBold';
+  -fx-background-color: transparent;
+  -fx-text-fill: #FF2DF1;
+  -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.8), 15, 0.6, 0, 0);
+  -fx-padding: 0 60px;
+  -fx-alignment: center;
+  -fx-min-width: 150px;
+  /* Efecto de texto neón adicional */
+  -fx-text-stroke: #FF2DF1;
+  -fx-text-stroke-width: 2px;
 }
 
 /* ----------------- Tablero -------------------- */
@@ -93,9 +112,9 @@
 
 /* --------- Título Principal ------------------- */
 .main-title {
-  -fx-font-size: 42px;
-  -fx-text-fill: #FF2DF1; /* Color rosa neón */
-  -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.2), 15, 0.3, 0, 0); /* Efecto de brillo suave */
+  -fx-font-size: 52px;
+  -fx-text-fill: #A5158C; /* Color rosa neón */
+  -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.8),  10, 0.4, 0, 1); /* Efecto de brillo suave */
   -fx-text-alignment: center; /* Alineación centrada */
   -fx-alignment: center; /* Alineación del contenedor */
   -fx-font-weight: bold; /* Grosor consistente con la fuente Baloo */
@@ -103,21 +122,26 @@
 
 /* --------- Botón Home ------------------------- */
 .home-button {
-  -fx-background-color: rgba(255, 255, 255, 0.1);
-  -fx-background-radius: 15px;
-  -fx-padding: 8px;
-  -fx-cursor: hand;
-  -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.5), 10, 0.3, 0, 1);
+    -fx-background-color: transparent; /* Fondo transparente */
+    -fx-background-radius: 0; /* Sin bordes redondeados */
+    -fx-border-color: transparent; /* Borde transparente */
+    -fx-padding: 0; /* Eliminar espacio interno */
+    -fx-cursor: hand;
 }
 
 .home-button:hover {
-  -fx-background-color: rgba(255, 255, 255, 0.2);
-  -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.8), 15, 0.4, 0, 2);
+    -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.8), 15, 0.4, 0, 2);
 }
 
 .home-button:pressed {
-  -fx-translate-y: 2px;
-  -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.3), 8, 0.2, 0, 1);
+    -fx-translate-y: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.3), 8, 0.2, 0, 1);
+}
+
+/* Ajustar tamaño del ícono */
+.home-button .image-view {
+    -fx-fit-width: 160px; /* Aumentar tamaño */
+    -fx-fit-height: 160px;
 }
 
 /* --------- Efectos Generales ------------------ */
