@@ -13,18 +13,22 @@
 
 /* Campo de texto */
 .name-field {
+    -fx-background-color: transparent;
     -fx-text-fill: #FF2DF1;
-    -fx-prompt-text-fill: #A939A1;
+    -fx-prompt-text-fill: #FF2DF1;
+    -fx-font-size: 20px;
     -fx-alignment: center;
-    -fx-background-color: rgba(65, 4, 69, 0.5);
-    -fx-background-radius: 30;
-    -fx-border-color: linear-gradient(to bottom, #F6DC43, transparent);
+    -fx-border-color: #FF2DF1;
     -fx-border-width: 2;
     -fx-border-radius: 30;
-    -fx-pref-width: 500px;
-    -fx-pref-height: 55px;
-    -fx-padding: 0 20;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 0);
+    -fx-background-radius: 30;
+    -fx-pref-height: 50px;
+    -fx-effect: dropshadow(gaussian, #FF2DF1, 10, 0, 0, 0);
+}
+
+.name-field:focused {
+    -fx-background-color: rgba(255, 45, 241, 0.1);
+    -fx-effect: dropshadow(gaussian, #FF2DF1, 15, 0.5, 0, 0);
 }
 
 /* Placeholder - Asegurar fuente Baloo 2 */
@@ -34,36 +38,30 @@
 
 /* Botones */
 .neon-button {
-    -fx-text-fill: white;
-    -fx-font-size: 22px;
-    -fx-background-color: #410445;
-    -fx-background-radius: 30;
-    -fx-border-color: linear-gradient(to bottom, #F6DC43, #A5158C);
+    -fx-background-color: transparent;
+    -fx-text-fill: #FF2DF1;
+    -fx-font-size: 20px;
+    -fx-border-color: #F6DC43;
     -fx-border-width: 2;
     -fx-border-radius: 30;
-    -fx-pref-width: 280px;
-    -fx-pref-height: 60px;
-    -fx-min-width: -fx-pref-width;
-    -fx-max-width: -fx-pref-width;
-    -fx-min-height: -fx-pref-height;
-    -fx-max-height: -fx-pref-height;
+    -fx-background-radius: 30;
+    -fx-pref-width: 300px;
+    -fx-pref-height: 50px;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.3), 10, 0, 0, 2);
-    -fx-alignment: center;
-    -fx-content-display: center;
-    -fx-padding: 0;
-    -fx-font-family: "Baloo 2 ExtraBold";
+    -fx-effect: dropshadow(gaussian, #F6DC43, 10, 0, 0, 0);
 }
 
-/* Efectos hover */
 .neon-button:hover {
-    -fx-font-size: 22px;
-    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #410445, #2D0230);
-    -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.6), 15, 0, 0, 3);
-    -fx-text-fill: #FF2DF1;
-    -fx-translate-y: -1;
-
+    -fx-background-color: rgba(246, 220, 67, 0.1);
+    -fx-effect: dropshadow(gaussian, #F6DC43, 15, 0.5, 0, 0);
+    -fx-translate-y: -2;
 }
+
+.neon-button:pressed {
+    -fx-background-color: rgba(246, 220, 67, 0.2);
+    -fx-translate-y: 1;
+}
+
 /* Estilos mejorados para el botón de historial */
 .score-button {
     -fx-background-color: transparent;

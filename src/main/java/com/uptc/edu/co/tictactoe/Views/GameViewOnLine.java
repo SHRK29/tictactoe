@@ -1,7 +1,9 @@
 package com.uptc.edu.co.tictactoe.Views;
 
+import com.google.gson.Gson;
 import com.uptc.edu.co.tictactoe.App;
 import com.uptc.edu.co.tictactoe.Network.ClientConnection;
+import com.uptc.edu.co.tictactoe.Network.Response;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -19,26 +21,21 @@ import javafx.scene.shape.StrokeLineCap;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GameViewOnLine {
-    private String playerName;
-    private String opponentName;
-    private BorderPane rootLayout;
     private Scene scene;
-    private GridPane gameGrid;
-    private Button[][] gridButtons = new Button[3][3];
-    private ClientConnection connection;
+    private GridPane gameBoard;
+    private Label statusLabel;
+    private Button[][] buttons;
+    private String playerName;
+    private String opponentName = "Esperando...";
+    private String playerSymbol;
     private boolean isMyTurn;
-    private char mySymbol; // 'X' o 'O'
-
-    // Lógica del juego
-    private char[][] boardState = new char[3][3];
-    private boolean gameOver = false;
-
-    // Para la línea ganadora
-    private Pane linePane;
-    private Line winningLine;
-    private int[] winningCombination;
+    private ClientConnection clientConnection;
+    private Thread listenerThread;
+    private final Gson gson = new Gson();
 
     // Imágenes
     private Image playerIconImage;
@@ -59,15 +56,16 @@ public class GameViewOnLine {
     private final double GRID_GAP = 15.0;
     private final double LINE_THICKNESS = 4.0;
 
-    public GameViewOnLine(String playerName, ClientConnection connection) {
+    private Pane linePane;
+    private Line winningLine;
+
+    public GameViewOnLine(String playerName, ClientConnection clientConnection) {
         this.playerName = playerName;
-        this.connection = connection;
+        this.clientConnection = clientConnection;
+        this.buttons = new Button[3][3];
         loadImages();
-        rootLayout = createLayout();
-        scene = new Scene(rootLayout, 1000, 700);
-        initializeGame();
-        scene.getStylesheets().add(getClass().getResource("/Styles/game.css").toExternalForm());
-        startNetworkListener();
+        initializeUI();
+        startListeningForServerMessages();
     }
 
     private void loadImages() {
@@ -95,38 +93,20 @@ public class GameViewOnLine {
         }
     }
 
-    private void initializeGame() {
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                boardState[i][j] = ' ';
-                if (gridButtons[i][j] != null) {
-                    gridButtons[i][j].setGraphic(null);
-                    gridButtons[i][j].setText("");
-                    gridButtons[i][j].setDisable(false);
-                    gridButtons[i][j].getStyleClass().remove("cell-text-x");
-                    gridButtons[i][j].getStyleClass().remove("cell-text-o");
-                }
-            }
-        }
-        gameOver = false;
-        winningCombination = null;
+    private void initializeUI() {
+        BorderPane root = new BorderPane();
+        root.getStyleClass().add("game-background");
+        root.setPadding(new Insets(20));
 
-        if (winningLine != null && linePane != null) {
-            linePane.getChildren().remove(winningLine);
-            winningLine = null;
-        }
-    }
+        // Header
+        root.setTop(createHeader());
+        // Centro del juego
+        root.setCenter(createGameCenter());
+        // Footer
+        root.setBottom(createFooter());
 
-    private BorderPane createLayout() {
-        BorderPane layout = new BorderPane();
-        layout.getStyleClass().add("game-background");
-        layout.setPadding(new Insets(20));
-
-        layout.setTop(createHeader());
-        layout.setCenter(createGameCenter());
-        layout.setBottom(createFooter());
-
-        return layout;
+        scene = new Scene(root, 1000, 700);
+        scene.getStylesheets().add(getClass().getResource("/Styles/game.css").toExternalForm());
     }
 
     private HBox createHeader() {
@@ -150,19 +130,26 @@ public class GameViewOnLine {
         // Oponente
         HBox player2Box = new HBox(20);
         player2Box.getStyleClass().add("player-box");
-        Label player2Label = new Label(opponentName != null ? opponentName.toUpperCase() : "ESPERANDO...");
+        Label player2Label = new Label(opponentName);
         player2Label.getStyleClass().add("player-name");
         player2Label.setId("player2Name");
         ImageView player2Icon = createImageView(opponentIconImage, 240);
         player2Icon.getStyleClass().add("player-icon");
         player2Box.getChildren().addAll(player2Label, player2Icon);
 
+        // Espaciadores
         Region leftSpacer = new Region();
         Region rightSpacer = new Region();
         HBox.setHgrow(leftSpacer, Priority.ALWAYS);
         HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 
-        headerBox.getChildren().addAll(leftSpacer, player1Box, vsLabel, player2Box, rightSpacer);
+        headerBox.getChildren().addAll(
+                leftSpacer,
+                player1Box,
+                vsLabel,
+                player2Box,
+                rightSpacer);
+
         return headerBox;
     }
 
@@ -170,16 +157,19 @@ public class GameViewOnLine {
         HBox centerContainer = new HBox(40);
         centerContainer.setAlignment(Pos.CENTER);
 
+        // Logo O
         ImageView oLogo = createImageView(imageO, 250);
         oLogo.setEffect(createNeonEffect(Color.rgb(255, 45, 241)));
 
+        // Tablero
         linePane = createLinePane();
-        gameGrid = createGameGridPane();
+        gameBoard = createGameBoard();
         StackPane boardPane = new StackPane();
         boardPane.getStyleClass().add("board-container");
         boardPane.setAlignment(Pos.CENTER);
-        boardPane.getChildren().addAll(linePane, gameGrid);
+        boardPane.getChildren().addAll(linePane, gameBoard);
 
+        // Logo X
         ImageView xLogo = createImageView(imageX, 250);
         xLogo.setEffect(createNeonEffect(Color.rgb(0, 255, 238)));
 
@@ -188,298 +178,349 @@ public class GameViewOnLine {
     }
 
     private HBox createFooter() {
-        HBox footerBox = new HBox();
-        footerBox.setAlignment(Pos.CENTER_LEFT);
-        footerBox.setPadding(new Insets(20, 50, 20, 50));
-        footerBox.setMaxWidth(Double.MAX_VALUE);
+        HBox footerBox = new HBox(20);
+        footerBox.setAlignment(Pos.CENTER);
+        footerBox.setPadding(new Insets(20, 0, 0, 0));
 
-        Label titleLabel = new Label("TIC TAC TOE");
-        titleLabel.getStyleClass().add("main-title");
+        // Estado del juego
+        statusLabel = new Label("Esperando al otro jugador...");
+        statusLabel.getStyleClass().add("status-label");
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        Button homeButton = new Button();
+        // Botón de salida
+        Button exitButton = new Button();
+        exitButton.getStyleClass().add("home-button");
         ImageView homeIcon = createImageView(homeIconImage, ICON_SIZE_HOME);
-        homeButton.setGraphic(homeIcon);
-        homeButton.getStyleClass().add("home-button");
-        homeButton.setOnAction(e -> {
-            connection.sendMessage("QUIT");
-            connection.closeConnection();
-            App.mostrarLoginView();
-        });
+        exitButton.setGraphic(homeIcon);
+        exitButton.setOnAction(e -> handleExit());
 
-        footerBox.getChildren().addAll(titleLabel, spacer, homeButton);
+        footerBox.getChildren().addAll(statusLabel, exitButton);
         return footerBox;
     }
 
-    private DropShadow createNeonEffect(Color color) {
-        DropShadow glow = new DropShadow();
-        glow.setColor(color);
-        glow.setRadius(30);
-        glow.setSpread(0.5);
-        glow.setInput(new Bloom(0.9));
-        return glow;
-    }
-
-    private Pane createLinePane() {
-        Pane pane = new Pane();
-        pane.getStyleClass().add("line-pane");
-
-        double totalWidth = 3 * CELL_SIZE + 2 * GRID_GAP;
-        double totalHeight = 3 * CELL_SIZE + 2 * GRID_GAP;
-
-        double verticalLineX1 = CELL_SIZE + GRID_GAP / 2.0;
-        double verticalLineX2 = 2 * CELL_SIZE + 1.5 * GRID_GAP;
-
-        Line verticalLine1 = createNeonLine(false, verticalLineX1, 0, verticalLineX1, totalHeight);
-        Line verticalLine2 = createNeonLine(false, verticalLineX2, 0, verticalLineX2, totalHeight);
-
-        double horizontalLineY1 = CELL_SIZE + GRID_GAP / 2.0;
-        double horizontalLineY2 = 2 * CELL_SIZE + 1.5 * GRID_GAP;
-
-        Line horizontalLine1 = createNeonLine(true, 0, horizontalLineY1, totalWidth, horizontalLineY1);
-        Line horizontalLine2 = createNeonLine(true, 0, horizontalLineY2, totalWidth, horizontalLineY2);
-
-        pane.getChildren().addAll(verticalLine1, verticalLine2, horizontalLine1, horizontalLine2);
-
-        pane.setPrefSize(totalWidth, totalHeight);
-        pane.setMaxSize(totalWidth, totalHeight);
-        pane.setMinSize(totalWidth, totalHeight);
-
-        return pane;
-    }
-
-    private Line createNeonLine(boolean horizontal, double startX, double startY, double endX, double endY) {
-        Line line = new Line(startX, startY, endX, endY);
-        line.setStroke(Color.rgb(246, 220, 67));
-        line.setStrokeWidth(LINE_THICKNESS);
-
-        DropShadow glow = new DropShadow();
-        glow.setColor(Color.rgb(246, 220, 67, 0.7));
-        glow.setRadius(15);
-        glow.setSpread(0.4);
-        glow.setInput(new Bloom(0.8));
-
-        line.setEffect(glow);
-        line.setStrokeLineCap(StrokeLineCap.ROUND);
-
-        return line;
-    }
-
-    private GridPane createGameGridPane() {
+    private GridPane createGameBoard() {
         GridPane grid = new GridPane();
-        grid.setAlignment(Pos.CENTER);
         grid.setHgap(GRID_GAP);
         grid.setVgap(GRID_GAP);
-        grid.getStyleClass().add("game-grid");
+        grid.setAlignment(Pos.CENTER);
 
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                Button cellButton = new Button();
-                cellButton.setMinSize(CELL_SIZE, CELL_SIZE);
-                cellButton.setPrefSize(CELL_SIZE, CELL_SIZE);
-                cellButton.setMaxSize(CELL_SIZE, CELL_SIZE);
-                cellButton.getStyleClass().add("grid-cell");
-
-                final int r = row;
-                final int c = col;
-                cellButton.setOnAction(e -> handleCellClick(r, c));
-
-                gridButtons[row][col] = cellButton;
-                grid.add(cellButton, col, row);
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                Button button = new Button();
+                button.getStyleClass().add("game-button");
+                button.setPrefSize(CELL_SIZE, CELL_SIZE);
+                final int row = i;
+                final int col = j;
+                button.setOnAction(e -> handleMove(row, col));
+                buttons[i][j] = button;
+                grid.add(button, j, i);
             }
         }
         return grid;
     }
 
+    private Pane createLinePane() {
+        Pane pane = new Pane();
+        pane.setMouseTransparent(true);
+        pane.setPrefSize(3 * CELL_SIZE + 2 * GRID_GAP, 3 * CELL_SIZE + 2 * GRID_GAP);
+        return pane;
+    }
+
     private ImageView createImageView(Image image, double fitSize) {
-        ImageView imageView = new ImageView();
-        if (image != null && !image.isError()) {
-            imageView.setImage(image);
-            imageView.setFitWidth(fitSize);
-            imageView.setFitHeight(fitSize);
-            imageView.setPreserveRatio(true);
-        }
+        ImageView imageView = new ImageView(image);
+        imageView.setFitWidth(fitSize);
+        imageView.setFitHeight(fitSize);
+        imageView.setPreserveRatio(true);
         return imageView;
     }
 
-    private void handleCellClick(int row, int col) {
-        if (boardState[row][col] == ' ' && !gameOver && isMyTurn) {
-            // Enviar movimiento al servidor
-            connection.sendMessage("MOVE " + row + " " + col);
-            // El servidor validará el movimiento y enviará la actualización a ambos jugadores
-        }
+    private DropShadow createNeonEffect(Color color) {
+        DropShadow neonEffect = new DropShadow();
+        neonEffect.setColor(color);
+        neonEffect.setSpread(0.5);
+        neonEffect.setRadius(20);
+        Bloom bloom = new Bloom(0.3);
+        neonEffect.setInput(bloom);
+        return neonEffect;
     }
 
-    private void updateBoard(int row, int col, char symbol) {
-        Platform.runLater(() -> {
-            boardState[row][col] = symbol;
-            updateButtonGraphic(row, col, symbol);
-            gridButtons[row][col].setDisable(true);
-        });
+    private void drawWinningLine(int startRow, int startCol, int endRow, int endCol) {
+        double startX = startCol * (CELL_SIZE + GRID_GAP) + CELL_SIZE / 2;
+        double startY = startRow * (CELL_SIZE + GRID_GAP) + CELL_SIZE / 2;
+        double endX = endCol * (CELL_SIZE + GRID_GAP) + CELL_SIZE / 2;
+        double endY = endRow * (CELL_SIZE + GRID_GAP) + CELL_SIZE / 2;
+
+        winningLine = new Line(startX, startY, endX, endY);
+        winningLine.setStroke(Color.rgb(246, 220, 67));
+        winningLine.setStrokeWidth(LINE_THICKNESS);
+        winningLine.setStrokeLineCap(StrokeLineCap.ROUND);
+        winningLine.setEffect(createNeonEffect(Color.rgb(246, 220, 67)));
+
+        linePane.getChildren().add(winningLine);
     }
 
-    private void updateButtonGraphic(int row, int col, char symbol) {
-        ImageView imageView = null;
-        double graphicSize = CELL_SIZE * 0.8;
-
-        if (symbol == 'X' && imageX != null) {
-            imageView = createImageView(imageX, graphicSize);
-            imageView.setEffect(createNeonEffect(Color.rgb(0, 255, 238)));
-        } else if (symbol == 'O' && imageO != null) {
-            imageView = createImageView(imageO, graphicSize);
-            imageView.setEffect(createNeonEffect(Color.rgb(255, 45, 241)));
-        }
-
-        if (imageView != null) {
-            gridButtons[row][col].setGraphic(imageView);
-            gridButtons[row][col].setText("");
-            gridButtons[row][col].getStyleClass().remove("cell-text-x");
-            gridButtons[row][col].getStyleClass().remove("cell-text-o");
-        }
-    }
-
-    private void drawWinningLine() {
-        if (winningCombination == null || linePane == null)
-            return;
-
-        double startX, startY, endX, endY;
-        double cellCenterOffset = CELL_SIZE / 2.0;
-
-        int startRow = winningCombination[0];
-        int startCol = winningCombination[1];
-        int endRow = winningCombination[2];
-        int endCol = winningCombination[3];
-
-        startX = startCol * (CELL_SIZE + GRID_GAP) + cellCenterOffset;
-        startY = startRow * (CELL_SIZE + GRID_GAP) + cellCenterOffset;
-        endX = endCol * (CELL_SIZE + GRID_GAP) + cellCenterOffset;
-        endY = endRow * (CELL_SIZE + GRID_GAP) + cellCenterOffset;
-
-        Platform.runLater(() -> {
-            winningLine = new Line(startX, startY, endX, endY);
-            winningLine.setStroke(Color.rgb(0, 255, 0));
-            winningLine.setStrokeWidth(8.0);
-            winningLine.setStrokeLineCap(StrokeLineCap.ROUND);
-
-            DropShadow winningGlow = new DropShadow();
-            winningGlow.setColor(Color.rgb(0, 255, 0, 0.8));
-            winningGlow.setRadius(25);
-            winningGlow.setSpread(0.6);
-            winningGlow.setInput(new Bloom(1.0));
-
-            winningLine.setEffect(winningGlow);
-            winningLine.getStyleClass().add("winning-line");
-
-            linePane.getChildren().add(winningLine);
-
-            // Mostrar pantalla de victoria después de 0.5 segundos
-            new Thread(() -> {
-                try {
-                    Thread.sleep(500);
-                    Platform.runLater(() -> showWinScreen(boardState[startRow][startCol]));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+    private void startListeningForServerMessages() {
+        listenerThread = new Thread(() -> {
+            try {
+                while (!Thread.currentThread().isInterrupted()) {
+                    Response response = clientConnection.receiveResponse();
+                    Platform.runLater(() -> handleServerResponse(response));
                 }
-            }).start();
-        });
-    }
-
-    private void showWinScreen(char winner) {
-        String winnerName;
-        Image winnerIcon;
-        boolean isDraw = (winner == ' ');
-
-        if (isDraw) {
-            winnerName = "Empate";
-            winnerIcon = imageO;
-        } else {
-            winnerName = (winner == mySymbol) ? playerName : opponentName;
-            winnerIcon = (winner == mySymbol) ? imageX : imageO;
-        }
-
-        WinView winView = new WinView(winnerName, isDraw, winnerIcon);
-
-        winView.getPlayAgainButton().setOnAction(e -> {
-            connection.sendMessage("PLAY_AGAIN");
-            initializeGame();
-            App.cambiarEscena(this.scene, "Tic Tac Toe - Jugando Online");
-        });
-
-        winView.getMainMenuButton().setOnAction(e -> {
-            connection.sendMessage("QUIT");
-            connection.closeConnection();
-            App.mostrarLoginView();
-        });
-
-        App.cambiarEscena(winView.getScene(), "Resultado - Tic Tac Toe");
-    }
-
-    private void startNetworkListener() {
-        new Thread(() -> {
-            while (!gameOver) {
-                String message = connection.receiveMessage();
-                if (message == null) continue;
-
-                handleServerMessage(message);
+            } catch (IOException e) {
+                Platform.runLater(() -> {
+                    System.err.println("Error en la conexión: " + e.getMessage());
+                    handleConnectionError();
+                });
             }
-        }).start();
+        });
+        listenerThread.setDaemon(true);
+        listenerThread.start();
     }
 
-    private void handleServerMessage(String message) {
-        String[] parts = message.split(" ");
-        String command = parts[0];
+    private void handleConnectionError() {
+        ConnectionErrorView errorView = new ConnectionErrorView();
+        errorView.show();
+    }
 
-        switch (command) {
-            case "INIT":
-                // INIT [symbol] [opponentName]
-                Platform.runLater(() -> {
-                    mySymbol = parts[1].charAt(0);
-                    opponentName = parts[2];
-                    isMyTurn = mySymbol == 'X';
-                    rootLayout.setTop(createHeader()); // Actualizar header con nombre del oponente
-                });
-                break;
+    private void handleServerResponse(Response response) {
+        if (response == null || response.getType() == null) {
+            System.err.println("Respuesta inválida del servidor");
+            return;
+        }
 
-            case "MOVE":
-                // MOVE [row] [col] [symbol]
-                int row = Integer.parseInt(parts[1]);
-                int col = Integer.parseInt(parts[2]);
-                char symbol = parts[3].charAt(0);
-                updateBoard(row, col, symbol);
-                isMyTurn = (symbol != mySymbol);
-                break;
+        try {
+            switch (response.getType()) {
+                case "loginConfirm":
+                    handleLoginConfirm(response.getData());
+                    break;
+                case "gameStart":
+                    handleGameStart(response.getData());
+                    break;
+                case "waitingForOpponent":
+                    handleWaitingForOpponent(response.getData());
+                    break;
+                case "gameState":
+                    handleGameState(response.getData());
+                    break;
+                case "moveError":
+                    handleMoveError(response.getData());
+                    break;
+                case "gameOver":
+                    handleGameOver(response.getData());
+                    break;
+                case "opponentDisconnected":
+                    handleOpponentDisconnected(response.getData());
+                    break;
+                case "error":
+                    handleError(response.getData());
+                    break;
+                default:
+                    System.err.println("Tipo de respuesta desconocido: " + response.getType());
+            }
+        } catch (Exception e) {
+            System.err.println("Error procesando respuesta: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
-            case "WIN":
-                // WIN [startRow] [startCol] [endRow] [endCol] [type] [index]
-                gameOver = true;
-                winningCombination = new int[6];
-                for (int i = 0; i < 6; i++) {
-                    winningCombination[i] = Integer.parseInt(parts[i + 1]);
+    private void handleLoginConfirm(Map<String, Object> data) {
+        Platform.runLater(() -> {
+            statusLabel.setText("Conectado al servidor. Esperando oponente...");
+        });
+    }
+
+    private void handleGameStart(Map<String, Object> data) {
+        try {
+            playerSymbol = data.get("symbol").toString();
+            opponentName = data.get("opponentName").toString();
+            isMyTurn = playerSymbol.equals("X"); // X siempre empieza
+            
+            Platform.runLater(() -> {
+                Label player2Label = (Label) scene.lookup("#player2Name");
+                if (player2Label != null) {
+                    player2Label.setText(opponentName.toUpperCase());
                 }
-                drawWinningLine();
-                break;
+                updateStatus();
+                updateButtonsState();
+            });
+        } catch (Exception e) {
+            System.err.println("Error al iniciar el juego: " + e.getMessage());
+        }
+    }
 
-            case "DRAW":
-                gameOver = true;
-                showWinScreen(' ');
-                break;
+    private void handleWaitingForOpponent(Map<String, Object> data) {
+        Platform.runLater(() -> {
+            statusLabel.setText(data.get("message").toString());
+        });
+    }
 
-            case "OPPONENT_DISCONNECTED":
-                Platform.runLater(() -> {
-                    // Mostrar mensaje de desconexión y volver al menú principal
-                    App.mostrarLoginView();
-                });
-                break;
+    private void handleGameState(Map<String, Object> data) {
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> board = (Map<String, Object>) data.get("board");
+            Boolean isPlayerTurn = (Boolean) data.get("isYourTurn");
+            String lastMove = (String) data.get("lastMove");
+
+            if (isPlayerTurn != null) {
+                this.isMyTurn = isPlayerTurn;
+            }
+
+            if (board != null) {
+                updateBoard(board);
+            }
+
+            if (lastMove != null) {
+                String[] coords = lastMove.split(",");
+                int row = Integer.parseInt(coords[0]);
+                int col = Integer.parseInt(coords[1]);
+                updateButtonGraphic(row, col, !isMyTurn ? playerSymbol : (playerSymbol.equals("X") ? "O" : "X"));
+            }
+
+            updateStatus();
+            updateButtonsState();
+        } catch (Exception e) {
+            System.err.println("Error actualizando estado del juego: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void updateBoard(Map<String, Object> board) {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                String key = i + "," + j;
+                String value = (String) board.get(key);
+                if (value != null && !value.isEmpty()) {
+                    updateButtonGraphic(i, j, value);
+                }
+            }
+        }
+    }
+
+    private void updateButtonGraphic(int row, int col, String symbol) {
+        if (row < 0 || row >= 3 || col < 0 || col >= 3) return;
+        
+        Platform.runLater(() -> {
+            Button button = buttons[row][col];
+            if (button != null) {
+                Image image = symbol.equals("X") ? imageX : imageO;
+                ImageView imageView = createImageView(image, CELL_SIZE * 0.8);
+                imageView.setEffect(createNeonEffect(symbol.equals("X") ? 
+                    Color.rgb(0, 255, 238) : Color.rgb(255, 45, 241)));
+                button.setGraphic(imageView);
+                button.setDisable(true);
+            }
+        });
+    }
+
+    private void handleMoveError(Map<String, Object> data) {
+        Platform.runLater(() -> {
+            String message = data.get("message").toString();
+            statusLabel.setText("Error: " + message);
+            // Reactivar los botones
+            setAllButtonsDisabled(false);
+        });
+    }
+
+    private void handleGameOver(Map<String, Object> data) {
+        Platform.runLater(() -> {
+            String winner = data.get("winner") != null ? data.get("winner").toString() : null;
+            if (winner != null) {
+                statusLabel.setText(winner.equals(playerName) ? "¡Has ganado!" : "¡Ha ganado " + winner + "!");
+            } else if ("draw".equals(data.get("result"))) {
+                statusLabel.setText("¡Empate!");
+            }
+            setAllButtonsDisabled(true);
+        });
+    }
+
+    private void handleOpponentDisconnected(Map<String, Object> data) {
+        Platform.runLater(() -> {
+            statusLabel.setText(data.get("message").toString());
+            // Deshabilitar todos los botones
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    buttons[i][j].setDisable(true);
+                }
+            }
+        });
+    }
+
+    private void handleError(Map<String, Object> data) {
+        Platform.runLater(() -> {
+            statusLabel.setText("Error: " + data.get("message").toString());
+        });
+    }
+
+    private void handleMove(int row, int col) {
+        if (!isMyTurn) {
+            System.out.println("No es tu turno");
+            return;
+        }
+
+        Map<String, Object> moveData = new HashMap<>();
+        moveData.put("row", row);
+        moveData.put("col", col);
+        moveData.put("symbol", playerSymbol);
+
+        try {
+            clientConnection.sendRequest("move", moveData);
+            isMyTurn = false;
+            updateStatus();
+            updateButtonsState();
+        } catch (Exception e) {
+            System.err.println("Error enviando movimiento: " + e.getMessage());
+            handleConnectionError();
+        }
+    }
+
+    private void updateButtonsState() {
+        Platform.runLater(() -> {
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    if (buttons[i][j].getGraphic() == null) {
+                        buttons[i][j].setDisable(!isMyTurn);
+                    }
+                }
+            }
+        });
+    }
+
+    private void setAllButtonsDisabled(boolean disabled) {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (buttons[i][j].getGraphic() == null) {
+                    buttons[i][j].setDisable(disabled);
+                }
+            }
+        }
+    }
+
+    private void updateStatus() {
+        Platform.runLater(() -> {
+            if (opponentName.equals("Esperando...")) {
+                statusLabel.setText("Esperando a otro jugador...");
+            } else {
+                statusLabel.setText(isMyTurn ? "Tu turno" : "Turno de " + opponentName);
+            }
+        });
+    }
+
+    private void handleExit() {
+        try {
+            Map<String, Object> exitData = new HashMap<>();
+            exitData.put("playerName", playerName);
+            clientConnection.sendRequest("exit", exitData);
+        } catch (Exception e) {
+            System.err.println("Error enviando solicitud de salida: " + e.getMessage());
+        } finally {
+            if (listenerThread != null) {
+                listenerThread.interrupt();
+            }
+            clientConnection.close();
+            App.mostrarLoginView();
         }
     }
 
     public Scene getScene() {
         return scene;
-    }
-
-    public void show() {
-        App.cambiarEscena(scene, "Tic Tac Toe - Jugando Online");
     }
 }

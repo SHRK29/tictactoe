@@ -5,85 +5,95 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import javafx.scene.paint.Color;
-import javafx.scene.effect.DropShadow;
+import javafx.scene.text.Text;
 import com.uptc.edu.co.tictactoe.App;
 import com.uptc.edu.co.tictactoe.Utils.FontUtils;
+import java.io.InputStream;
 
 public class ConnectionErrorView {
     private Scene scene;
+    private final double ICON_SIZE = 200.0;
 
     public ConnectionErrorView() {
-        // Configurar la escena
-        configurarEscena();
+        createView();
     }
 
-    private void configurarEscena() {
-        Font titleFont = FontUtils.cargarFuenteBaloo(42);
-        Font subtitleFont = FontUtils.cargarFuenteBaloo(24);
-        Font buttonFont = FontUtils.cargarFuenteBaloo(18);
-
-        Label title = new Label("ERROR DE CONEXIÓN");
-        title.setFont(titleFont);
-        title.setTextFill(Color.web("#FFB3F9"));
-        title.setEffect(new DropShadow(10, Color.web("#FF2DF1")));
-
-        Label subtitle = new Label("VERIFICA TU CONEXIÓN A INTERNET");
-        subtitle.setFont(subtitleFont);
-        subtitle.setTextFill(Color.web("#FFB3F9"));
-        subtitle.setEffect(new DropShadow(8, Color.web("#FF2DF1")));
-
-        ImageView icon = new ImageView(new Image(getClass().getResourceAsStream("/Icons/ErrorClose.png")));
-        icon.setFitWidth(300);
-        icon.setFitHeight(300);
-        icon.setPreserveRatio(true);
-
-        Button retryButton = crearBotonReintentar(buttonFont);
-
-        VBox root = new VBox(25, title, subtitle, icon, retryButton);
+    private void createView() {
+        VBox root = new VBox(30);
         root.setAlignment(Pos.CENTER);
         root.setPadding(new Insets(40));
-        root.getStyleClass().add("error-root");
+        root.getStyleClass().add("background");
 
-        this.scene = new Scene(root, 800, 600);
-        scene.getStylesheets().add(getClass().getResource("/styles/error.css").toExternalForm());
+        // Icono de error
+        ImageView errorIcon = createImageView("/Icons/ErrorClose.png", ICON_SIZE);
+        if (errorIcon != null) {
+            errorIcon.setEffect(createNeonEffect(Color.rgb(255, 45, 45)));
+            root.getChildren().add(errorIcon);
+        }
+
+        // Mensaje de error
+        Text errorText = new Text("ERROR DE CONEXIÓN");
+        errorText.setFont(FontUtils.cargarFuenteBaloo(42));
+        errorText.setFill(Color.web("#FFB3F9"));
+        errorText.setEffect(createNeonEffect(Color.web("#FF2DF1")));
+
+        Text subtitleText = new Text("NO SE PUDO CONECTAR AL SERVIDOR");
+        subtitleText.setFont(FontUtils.cargarFuenteBaloo(24));
+        subtitleText.setFill(Color.web("#FFB3F9"));
+        subtitleText.setEffect(createNeonEffect(Color.web("#FF2DF1")));
+
+        // Botón de reintentar
+        Button retryButton = new Button("REINTENTAR");
+        retryButton.getStyleClass().add("neon-button");
+        retryButton.setFont(FontUtils.cargarFuenteBaloo(20));
+        retryButton.setOnAction(e -> App.mostrarLoginView());
+
+        root.getChildren().addAll(errorText, subtitleText, retryButton);
+        
+        scene = new Scene(root, 800, 600);
+        String cssPath = "/Styles/login.css";
+        if (getClass().getResource(cssPath) != null) {
+            scene.getStylesheets().add(getClass().getResource(cssPath).toExternalForm());
+        }
     }
 
-    private Button crearBotonReintentar(Font font) {
-        Button button = new Button("REINTENTAR");
-        button.setFont(font);
-        button.getStyleClass().add("neon-button");
-        button.setPrefSize(280, 60);
-        
-        button.setOnMouseEntered(e -> {
-            button.setStyle("-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #410445, #2D0230); " +
-                          "-fx-text-fill: #FF2DF1;");
-            button.setEffect(new DropShadow(15, Color.web("#F6DC43")));
-            button.setTranslateY(-2);
-        });
-        
-        button.setOnMouseExited(e -> {
-            button.setStyle("");
-            button.setEffect(new DropShadow(10, Color.web("#F6DC43")));
-            button.setTranslateY(0);
-        });
-        
-        button.setOnAction(e -> {
-            App.mostrarLoginView();
-        });
-        
-        return button;
+    private ImageView createImageView(String resourcePath, double size) {
+        try {
+            InputStream is = getClass().getResourceAsStream(resourcePath);
+            if (is == null) {
+                System.err.println("No se pudo cargar el recurso: " + resourcePath);
+                return null;
+            }
+            Image image = new Image(is);
+            ImageView imageView = new ImageView(image);
+            imageView.setFitWidth(size);
+            imageView.setFitHeight(size);
+            imageView.setPreserveRatio(true);
+            return imageView;
+        } catch (Exception e) {
+            System.err.println("Error al cargar la imagen " + resourcePath + ": " + e.getMessage());
+            return null;
+        }
     }
 
-    public void show() {
-        App.cambiarEscena(scene, "Error de Conexión");
+    private DropShadow createNeonEffect(Color color) {
+        DropShadow neonEffect = new DropShadow();
+        neonEffect.setColor(color);
+        neonEffect.setSpread(0.5);
+        neonEffect.setRadius(20);
+        return neonEffect;
     }
 
     public Scene getScene() {
         return scene;
+    }
+
+    public void show() {
+        App.cambiarEscena(scene, "Error de Conexión");
     }
 }
