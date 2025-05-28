@@ -308,9 +308,9 @@ public class GameViewOffline {
             gridButtons[row][col].setDisable(true);
 
             if (checkWin('X')) {
-                gameOver = true;
+                return;
             } else if (checkDraw()) {
-                gameOver = true;
+                return;
             } else {
                 playerTurn = false;
                 new Thread(() -> {
@@ -340,9 +340,9 @@ public class GameViewOffline {
         gridButtons[row][col].setDisable(true);
 
         if (checkWin('O')) {
-            gameOver = true;
+            return;
         } else if (checkDraw()) {
-            gameOver = true;
+            return;
         } else {
             playerTurn = true;
         }
@@ -376,20 +376,27 @@ public class GameViewOffline {
         // Comprobar filas
         for (int i = 0; i < 3; i++) {
             if (boardState[i][0] == player && boardState[i][1] == player && boardState[i][2] == player) {
+                showWinScreen(player);
                 return true;
             }
         }
         // Comprobar columnas
         for (int j = 0; j < 3; j++) {
             if (boardState[0][j] == player && boardState[1][j] == player && boardState[2][j] == player) {
+                showWinScreen(player);
                 return true;
             }
         }
         // Comprobar diagonales
         if (boardState[0][0] == player && boardState[1][1] == player && boardState[2][2] == player) {
+            showWinScreen(player);
             return true;
         }
-        return boardState[0][2] == player && boardState[1][1] == player && boardState[2][0] == player;
+        if (boardState[0][2] == player && boardState[1][1] == player && boardState[2][0] == player) {
+            showWinScreen(player);
+            return true;
+        }
+        return false;
     }
 
     private boolean checkDraw() {
@@ -400,7 +407,42 @@ public class GameViewOffline {
                 }
             }
         }
-        return !checkWin('X') && !checkWin('O');
+        if (!checkWin('X') && !checkWin('O')) {
+            showWinScreen(' '); // Usamos ' ' para representar empate
+            return true;
+        }
+        return false;
+    }
+
+    private void showWinScreen(char winner) {
+        Platform.runLater(() -> {
+            String winnerName;
+            Image winnerIcon;
+            boolean isDraw = (winner == ' ');
+
+            if (isDraw) {
+                winnerName = "Empate";
+                winnerIcon = imageO; // Puedes usar cualquier icono o uno específico para empate
+            } else if (winner == 'X') {
+                winnerName = playerName;
+                winnerIcon = imageX;
+            } else {
+                winnerName = "PC";
+                winnerIcon = imageO;
+            }
+
+            WinView winView = new WinView(winnerName, isDraw, winnerIcon);
+
+            // Configurar acciones de los botones
+            winView.getPlayAgainButton().setOnAction(e -> {
+                initializeGame();
+                App.cambiarEscena(this.scene, "Tic Tac Toe - Jugando contra PC");
+            });
+
+            winView.getMainMenuButton().setOnAction(e -> App.mostrarLoginView());
+
+            App.cambiarEscena(winView.getScene(), "Resultado - Tic Tac Toe");
+        });
     }
 
     public Scene getScene() {
