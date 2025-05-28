@@ -61,8 +61,8 @@ public class ScoreView {
         layout.getStyleClass().add("background");
 
         scene = new Scene(layout, 1000, 600);
-        scene.getStylesheets().add(getClass().getResource("/styles/score.css").toExternalForm());
-        scene.getStylesheets().add(getClass().getResource("/styles/login.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/Styles/score.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/Styles/login.css").toExternalForm());
     }
 
     public Scene getScene() {

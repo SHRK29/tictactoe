@@ -29,9 +29,9 @@ public class HowToPlayView {
         // Instrucciones
         Label instructions = new Label(
                 "• El juego es para 2 jugadores o contra la PC\n" +
-                "• Gana quien alinee 3 símbolos (X u O)\n" +
-                "• Puedes jugar en línea o en local\n" +
-                "• Usa el mouse para hacer tu jugada");
+                        "• Gana quien alinee 3 símbolos (X u O)\n" +
+                        "• Puedes jugar en línea o en local\n" +
+                        "• Usa el mouse para hacer tu jugada");
         instructions.setFont(textFont);
         instructions.getStyleClass().add("how-text");
         instructions.setMaxWidth(500);
@@ -50,7 +50,7 @@ public class HowToPlayView {
         root.getStyleClass().add("how-root");
 
         this.scene = new Scene(root, 800, 600);
-        scene.getStylesheets().add(getClass().getResource("/styles/howtoplay.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/Styles/howtoplay.css").toExternalForm());
     }
 
     private Button crearBotonNeon(String text, Font font) {
@@ -58,20 +58,20 @@ public class HowToPlayView {
         button.setFont(font);
         button.getStyleClass().add("neon-button");
         button.setPrefSize(280, 60);
-        
+
         button.setOnMouseEntered(e -> {
             button.setStyle("-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #410445, #2D0230); " +
-                           "-fx-text-fill: #FF2DF1;");
+                    "-fx-text-fill: #FF2DF1;");
             button.setEffect(new DropShadow(15, Color.web("#F6DC43")));
             button.setTranslateY(-2);
         });
-        
+
         button.setOnMouseExited(e -> {
             button.setStyle("");
             button.setEffect(new DropShadow(10, Color.web("#F6DC43")));
             button.setTranslateY(0);
         });
-        
+
         return button;
     }
 

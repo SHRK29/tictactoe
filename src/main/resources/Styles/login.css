@@ -84,8 +84,3 @@
     -fx-translate-y: 2px;
     -fx-effect: dropshadow(gaussian, #F6DC43, 10, 0.3, 0, 0);
 }
-
-/* Asegurar que el fondo sea consistente */
-.background {
-    -fx-background-color: linear-gradient(to bottom, #1a1a2e, #16213e);
-}
