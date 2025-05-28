@@ -101,6 +101,15 @@
   -fx-background-color: rgba(246, 220, 67, 0.15);
 }
 
+/* --------- Línea Ganadora -------------------- */
+.winning-line {
+  -fx-stroke: #00FF00; /* Verde neón */
+  -fx-stroke-width: 8px;
+  -fx-stroke-line-cap: round;
+  -fx-effect: dropshadow(gaussian, rgba(0, 255, 0, 0.9), 25, 0.8, 0, 0);
+  -fx-opacity: 0.95;
+}
+
 /* --------- Texto Alternativo (X/O) ------------ */
 .cell-text-x {
   -fx-effect: dropshadow(three-pass-box, #00FFEE, 35, 0.9, 0, 0);

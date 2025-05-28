@@ -32,6 +32,11 @@ public class GameViewOffline {
     private boolean gameOver = false;
     private Random random = new Random();
 
+    // Para la línea ganadora
+    private Pane linePane;
+    private Line winningLine;
+    private int[] winningCombination; // Array de 6 elementos: [startRow, startCol, endRow, endCol, type, index]
+
     // Imágenes
     private Image playerIconImage;
     private Image pcIconImage;
@@ -100,6 +105,13 @@ public class GameViewOffline {
         }
         playerTurn = true;
         gameOver = false;
+        winningCombination = null;
+
+        // Limpiar línea ganadora anterior
+        if (winningLine != null && linePane != null) {
+            linePane.getChildren().remove(winningLine);
+            winningLine = null;
+        }
     }
 
     private BorderPane createLayout() {
@@ -170,7 +182,7 @@ public class GameViewOffline {
         oLogo.setEffect(createNeonEffect(Color.rgb(255, 45, 241)));
 
         // Tablero
-        Pane linePane = createLinePane();
+        linePane = createLinePane();
         gameGrid = createGameGridPane();
         StackPane boardPane = new StackPane();
         boardPane.getStyleClass().add("board-container");
@@ -309,6 +321,7 @@ public class GameViewOffline {
 
             if (checkWin('X')) {
                 gameOver = true;
+                drawWinningLine();
             } else if (checkDraw()) {
                 gameOver = true;
             } else {
@@ -341,6 +354,7 @@ public class GameViewOffline {
 
         if (checkWin('O')) {
             gameOver = true;
+            drawWinningLine();
         } else if (checkDraw()) {
             gameOver = true;
         } else {
@@ -376,20 +390,29 @@ public class GameViewOffline {
         // Comprobar filas
         for (int i = 0; i < 3; i++) {
             if (boardState[i][0] == player && boardState[i][1] == player && boardState[i][2] == player) {
+                winningCombination = new int[] { i, 0, i, 2, 0, i }; // tipo 0 = fila
                 return true;
             }
         }
         // Comprobar columnas
         for (int j = 0; j < 3; j++) {
             if (boardState[0][j] == player && boardState[1][j] == player && boardState[2][j] == player) {
+                winningCombination = new int[] { 0, j, 2, j, 1, j }; // tipo 1 = columna
                 return true;
             }
         }
-        // Comprobar diagonales
+        // Comprobar diagonal principal
         if (boardState[0][0] == player && boardState[1][1] == player && boardState[2][2] == player) {
+            winningCombination = new int[] { 0, 0, 2, 2, 2, 0 }; // tipo 2 = diagonal principal
             return true;
         }
-        return boardState[0][2] == player && boardState[1][1] == player && boardState[2][0] == player;
+        // Comprobar diagonal secundaria
+        if (boardState[0][2] == player && boardState[1][1] == player && boardState[2][0] == player) {
+            winningCombination = new int[] { 0, 2, 2, 0, 3, 0 }; // tipo 3 = diagonal secundaria
+            return true;
+        }
+
+        return false;
     }
 
     private boolean checkDraw() {
@@ -401,6 +424,46 @@ public class GameViewOffline {
             }
         }
         return !checkWin('X') && !checkWin('O');
+    }
+
+    private void drawWinningLine() {
+        if (winningCombination == null || linePane == null)
+            return;
+
+        // Calcular las coordenadas de la línea ganadora
+        double startX, startY, endX, endY;
+        double cellCenterOffset = CELL_SIZE / 2.0;
+
+        int startRow = winningCombination[0];
+        int startCol = winningCombination[1];
+        int endRow = winningCombination[2];
+        int endCol = winningCombination[3];
+        int type = winningCombination[4];
+
+        // Calcular posición del centro de cada celda
+        startX = startCol * (CELL_SIZE + GRID_GAP) + cellCenterOffset;
+        startY = startRow * (CELL_SIZE + GRID_GAP) + cellCenterOffset;
+        endX = endCol * (CELL_SIZE + GRID_GAP) + cellCenterOffset;
+        endY = endRow * (CELL_SIZE + GRID_GAP) + cellCenterOffset;
+
+        // Crear la línea ganadora
+        winningLine = new Line(startX, startY, endX, endY);
+        winningLine.setStroke(Color.rgb(0, 255, 0)); // Verde neón
+        winningLine.setStrokeWidth(8.0); // Más gruesa que las líneas normales
+        winningLine.setStrokeLineCap(StrokeLineCap.ROUND);
+
+        // Efecto neón verde
+        DropShadow winningGlow = new DropShadow();
+        winningGlow.setColor(Color.rgb(0, 255, 0, 0.8));
+        winningGlow.setRadius(25);
+        winningGlow.setSpread(0.6);
+        winningGlow.setInput(new Bloom(1.0));
+
+        winningLine.setEffect(winningGlow);
+        winningLine.getStyleClass().add("winning-line");
+
+        // Agregar la línea al panel
+        linePane.getChildren().add(winningLine);
     }
 
     public Scene getScene() {
