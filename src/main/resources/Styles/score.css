@@ -1,0 +1,47 @@
+
+/* Estilo para la tabla */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: #F6DC43;
+    -fx-border-width: 2px;
+    -fx-border-radius: 5px;
+}
+
+/* Estilo para las celdas de la tabla */
+.table-cell {
+    -fx-text-fill: #F6DC43;
+    -fx-font-family: 'Baloo 2';
+    -fx-font-size: 16px;
+    -fx-alignment: CENTER;
+}
+
+/* Estilo para el encabezado de la tabla */
+.column-header {
+    -fx-background-color: #2D0230;
+    -fx-text-fill: #F6DC43;
+    -fx-font-family: 'Baloo 2';
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+/* Estilo para las filas de la tabla */
+.table-row-cell {
+    -fx-background-color: #1A0029;
+    -fx-table-cell-border-color: #410445;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #2D0230;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #FF2DF1;
+    -fx-text-fill: white;
+}
+
+/* Efecto neon para el título */
+.title-label {
+    -fx-text-fill: #FF2DF1;
+    -fx-font-size: 36px;
+    -fx-effect: dropshadow(gaussian, #FF2DF1, 15, 0.5, 0, 0);
+}

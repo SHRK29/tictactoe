@@ -1,0 +1,24 @@
+.win-background {
+    -fx-background-color: linear-gradient(to bottom, #1a1a2e, #16213e);
+}
+
+.win-button {
+    -fx-background-color: #FF2DF1;
+    -fx-text-fill: white;
+    -fx-background-radius: 15;
+    -fx-border-radius: 15;
+    -fx-border-color: #F6DC43;
+    -fx-border-width: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(246, 220, 67, 0.5), 10, 0.5, 0, 0);
+}
+
+.win-button:hover {
+    -fx-background-color: #F6DC43;
+    -fx-text-fill: #1a1a2e;
+    -fx-cursor: hand;
+}
+
+.win-button:pressed {
+    -fx-background-color: #FF2DF1;
+    -fx-text-fill: white;
+}

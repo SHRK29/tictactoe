@@ -6,6 +6,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -68,41 +70,71 @@ public class LoginView {
         mainLayout.getChildren().addAll(title, nameField, buttonGrid);
         VBox.setMargin(nameField, new Insets(0, 0, 30, 0));
 
-        scene = new Scene(mainLayout, 900, 700);
+        // Crear botón de historial de puntuaciones mejorado
+        Button scoreButton = createScoreButton();
+        
+        // Usar StackPane como contenedor raíz para superponer elementos
+        StackPane rootLayout = new StackPane();
+        rootLayout.getChildren().add(mainLayout);
+        
+        // Añadir el botón de score flotante
+        StackPane.setAlignment(scoreButton, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(scoreButton, new Insets(0, 30, 30, 0));
+        rootLayout.getChildren().add(scoreButton);
+
+        scene = new Scene(rootLayout, 900, 700);
         scene.getStylesheets().add(getClass().getResource("/Styles/login.css").toExternalForm());
 
         // Configurar acciones de los botones
         configurarAccionesBotones();
+        
+        // Configurar acción del botón de historial
+        scoreButton.setOnAction(e -> {
+            ScoreView scoreView = new ScoreView();
+            scoreView.getBackButton().setOnAction(ev -> {
+                App.cambiarEscena(this.scene, "Tic Tac Toe - Login");
+            });
+            App.cambiarEscena(scoreView.getScene(), "Historial de Partidas");
+        });
+    }
+
+    private Button createScoreButton() {
+        ImageView scoreIcon = new ImageView(new Image(getClass().getResourceAsStream("/Icons/ScoreIcon.png")));
+        scoreIcon.setFitHeight(185);  // Tamaño aumentado
+        scoreIcon.setFitWidth(185);   // Tamaño aumentado
+        
+        Button scoreButton = new Button();
+        scoreButton.setGraphic(scoreIcon);
+        scoreButton.getStyleClass().add("score-button");
+        scoreButton.setPadding(new Insets(5));
+        scoreButton.setBackground(Background.EMPTY); // Fondo transparente
+        
+        return scoreButton;
     }
 
     private void configurarAccionesBotones() {
-
         howToPlayButton.setOnAction(e -> {
             HowToPlayView howToPlayView = new HowToPlayView();
             App.cambiarEscena(howToPlayView.getScene(), "Cómo Jugar - Tic Tac Toe");
         });
 
-        // Acción para botón Jugar contra PC
         vsPcButton.setOnAction(e -> {
             String playerName = nameField.getText().trim();
             if (playerName.isEmpty()) {
-                playerName = "Jugador 1"; // Nombre por defecto
+                playerName = "Jugador 1";
             }
             GameViewOffline gameView = new GameViewOffline(playerName);
             App.cambiarEscena(gameView.getScene(), "Tic Tac Toe - Modo Local");
         });
 
-        // Acción para botón Jugar Online (ejemplo)
         onlineButton.setOnAction(e -> {
-            // Implementación para modo online
             String playerName = nameField.getText().trim();
             if (playerName.isEmpty()) {
                 playerName = "Jugador Online";
             }
-            // Aquí iría la lógica para el modo online
+            // Lógica para el modo online
         });
 
-        // Acción para botón Salir
         exitButton.setOnAction(e -> Platform.exit());
     }
 
@@ -139,7 +171,7 @@ public class LoginView {
         return scene;
     }
 
-    // Getters para los componentes (si son necesarios)
+    // Getters para los componentes
     public TextField getNameField() {
         return nameField;
     }
