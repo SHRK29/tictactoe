@@ -1,4 +1,4 @@
-package com.uptc.edu.co.tictactoe.Utils;
+package co.edu.uptc.tictactoe.Utils;
 
 import javafx.stage.Stage;
 

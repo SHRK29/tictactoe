@@ -1,6 +1,6 @@
-package com.uptc.edu.co.tictactoe.Views;
+package co.edu.uptc.tictactoe.Views;
 
-import com.uptc.edu.co.tictactoe.Utils.FontUtils;
+import co.edu.uptc.tictactoe.Utils.FontUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;

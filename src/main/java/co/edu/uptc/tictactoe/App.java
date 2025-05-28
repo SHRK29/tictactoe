@@ -1,8 +1,10 @@
-package com.uptc.edu.co.tictactoe;
+package co.edu.uptc.tictactoe;
+import co.edu.uptc.tictactoe.Network.ClientConnection;
+import co.edu.uptc.tictactoe.Utils.WindowUtils;
+import co.edu.uptc.tictactoe.Views.LoginView;
 
-import com.uptc.edu.co.tictactoe.Network.ClientConnection;
-import com.uptc.edu.co.tictactoe.Utils.WindowUtils;
-import com.uptc.edu.co.tictactoe.Views.LoginView;
+
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;

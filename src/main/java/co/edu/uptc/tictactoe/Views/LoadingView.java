@@ -1,4 +1,4 @@
-package com.uptc.edu.co.tictactoe.Views;
+package co.edu.uptc.tictactoe.Views;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -7,8 +7,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
-import com.uptc.edu.co.tictactoe.App;
-
+import co.edu.uptc.tictactoe.App;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.uptc.edu.co.tictactoe.Views;
+package co.edu.uptc.tictactoe.Views;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -11,8 +11,9 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.paint.Color;
 import javafx.scene.effect.DropShadow;
-import com.uptc.edu.co.tictactoe.App;
-import com.uptc.edu.co.tictactoe.Utils.FontUtils;
+
+import co.edu.uptc.tictactoe.App;
+import co.edu.uptc.tictactoe.Utils.FontUtils;
 
 public class ConnectionErrorView {
     private Scene scene;

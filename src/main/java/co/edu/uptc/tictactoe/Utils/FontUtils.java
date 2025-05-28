@@ -1,4 +1,4 @@
-package com.uptc.edu.co.tictactoe.Utils;
+package co.edu.uptc.tictactoe.Utils;
 
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;

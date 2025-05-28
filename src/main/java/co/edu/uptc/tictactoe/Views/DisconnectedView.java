@@ -1,4 +1,4 @@
-package com.uptc.edu.co.tictactoe.Views;
+package co.edu.uptc.tictactoe.Views;
 
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -7,8 +7,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import com.uptc.edu.co.tictactoe.Utils.FontUtils;
-
+import co.edu.uptc.tictactoe.Utils.FontUtils;
 public class DisconnectedView {
     private Stage primaryStage;
 

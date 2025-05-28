@@ -1,5 +1,4 @@
-package com.uptc.edu.co.tictactoe.Network;
-
+package co.edu.uptc.tictactoe.Network;
 import java.io.*;
 import java.net.Socket;
 

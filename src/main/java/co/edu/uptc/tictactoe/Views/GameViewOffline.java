@@ -1,6 +1,6 @@
-package com.uptc.edu.co.tictactoe.Views;
+package co.edu.uptc.tictactoe.Views;
 
-import com.uptc.edu.co.tictactoe.App;
+import co.edu.uptc.tictactoe.App;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
