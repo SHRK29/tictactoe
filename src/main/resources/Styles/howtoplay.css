@@ -7,27 +7,9 @@
 /* Estructura */
 .how-root {
     -fx-background-color: #410445;
-    -fx-background-radius: 20;
-    -fx-effect: innershadow(gaussian, rgba(0,0,0,0.7), 30, 0, 0, 0);
 }
 
-/* Título */
-.how-title {
-    -fx-font-family: 'Baloo 2 ExtraBold';
-    -fx-text-fill: #F6DC43;
-    -fx-font-size: 42px;
-    -fx-effect: dropshadow(gaussian, rgba(255,45,241,0.5), 15, 0.3, 0, 0);
-}
 
-/* Texto instrucciones */
-.how-text {
-    -fx-font-family: 'Baloo 2 ExtraBold';
-    -fx-text-fill: white;
-    -fx-font-size: 20px;
-    -fx-line-spacing: 8px;
-    -fx-alignment: center;
-    -fx-padding: 0 50px;
-}
 
 /* Botón (copiado exacto de login.css) */
 .neon-button {
