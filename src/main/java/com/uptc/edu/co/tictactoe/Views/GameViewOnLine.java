@@ -185,6 +185,45 @@ public class GameViewOnLine {
         linePane.getStyleClass().add("line-pane");
         linePane.setPickOnBounds(false);
         
+        // Calcular dimensiones del tablero para las líneas
+        double boardTotalWidth = 3 * CELL_SIZE + 2 * GRID_GAP;
+        double boardTotalHeight = 3 * CELL_SIZE + 2 * GRID_GAP;
+
+        // Crear y añadir las líneas de la grilla
+        // Línea Vertical 1
+        Line vLine1 = new Line(CELL_SIZE + GRID_GAP / 2, 0,
+                               CELL_SIZE + GRID_GAP / 2, boardTotalHeight);
+        vLine1.setStroke(Color.YELLOW);
+        vLine1.setStrokeWidth(LINE_THICKNESS);
+        vLine1.setStrokeLineCap(StrokeLineCap.ROUND);
+        vLine1.setEffect(createNeonEffect(Color.YELLOW));
+
+        // Línea Vertical 2
+        Line vLine2 = new Line(2 * CELL_SIZE + GRID_GAP + GRID_GAP / 2, 0,
+                               2 * CELL_SIZE + GRID_GAP + GRID_GAP / 2, boardTotalHeight);
+        vLine2.setStroke(Color.YELLOW);
+        vLine2.setStrokeWidth(LINE_THICKNESS);
+        vLine2.setStrokeLineCap(StrokeLineCap.ROUND);
+        vLine2.setEffect(createNeonEffect(Color.YELLOW));
+
+        // Línea Horizontal 1
+        Line hLine1 = new Line(0, CELL_SIZE + GRID_GAP / 2,
+                               boardTotalWidth, CELL_SIZE + GRID_GAP / 2);
+        hLine1.setStroke(Color.YELLOW);
+        hLine1.setStrokeWidth(LINE_THICKNESS);
+        hLine1.setStrokeLineCap(StrokeLineCap.ROUND);
+        hLine1.setEffect(createNeonEffect(Color.YELLOW));
+
+        // Línea Horizontal 2
+        Line hLine2 = new Line(0, 2 * CELL_SIZE + GRID_GAP + GRID_GAP / 2,
+                               boardTotalWidth, 2 * CELL_SIZE + GRID_GAP + GRID_GAP / 2);
+        hLine2.setStroke(Color.YELLOW);
+        hLine2.setStrokeWidth(LINE_THICKNESS);
+        hLine2.setStrokeLineCap(StrokeLineCap.ROUND);
+        hLine2.setEffect(createNeonEffect(Color.YELLOW));
+
+        linePane.getChildren().addAll(vLine1, vLine2, hLine1, hLine2);
+        
         StackPane boardStackPane = new StackPane();
         boardStackPane.getStyleClass().add("board-container");
         boardStackPane.setAlignment(Pos.CENTER);
