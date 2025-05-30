@@ -30,12 +30,28 @@ public class App extends Application {
     private static final int SERVER_PORT = 12345;
 
     static {
-        // Configurar el logger para mostrar todos los niveles
+        // Configurar el logger raíz para un nivel por defecto (INFO o WARNING sería bueno)
         Logger rootLogger = Logger.getLogger("");
-        rootLogger.setLevel(Level.ALL);
+        rootLogger.setLevel(Level.INFO); // Cambiado de ALL a INFO
+
+        // Configurar niveles específicos para loggers de JavaFX para reducir el ruido
+        Logger.getLogger("javafx.scene").setLevel(Level.WARNING);
+        Logger.getLogger("javafx.fxml").setLevel(Level.WARNING);
+        Logger.getLogger("javafx.css").setLevel(Level.WARNING);
+        Logger.getLogger("javafx.scene.layout").setLevel(Level.WARNING);
+        Logger.getLogger("javafx.scene.control").setLevel(Level.WARNING);
+        Logger.getLogger("javafx.scene.Node").setLevel(Level.WARNING); // Específicamente para los mensajes de Node
+
         ConsoleHandler handler = new ConsoleHandler();
-        handler.setLevel(Level.ALL);
+        handler.setLevel(Level.ALL); // El handler puede manejar todos los niveles, pero el logger decidirá qué pasar.
         handler.setFormatter(new SimpleFormatter());
+
+        // Limpiar handlers existentes para evitar duplicados si este bloque se ejecuta múltiples veces (poco probable para static)
+        if (rootLogger.getHandlers().length > 0) {
+            for (java.util.logging.Handler h : rootLogger.getHandlers()) {
+                rootLogger.removeHandler(h);
+            }
+        }
         rootLogger.addHandler(handler);
     }
 

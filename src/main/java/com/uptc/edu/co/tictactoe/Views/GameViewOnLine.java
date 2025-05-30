@@ -35,6 +35,7 @@ import javafx.animation.Timeline;
 
 public class GameViewOnLine {
     private Scene scene;
+    private BorderPane rootLayout;
     private GridPane gameBoard;
     private Label statusLabel;
     private Label timerLabel;
@@ -110,60 +111,141 @@ public class GameViewOnLine {
     }
 
     private void initializeUI() {
-        VBox root = new VBox(20);
-        root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(20));
-        root.setStyle("-fx-background-color: #f0f0f0;");
+        rootLayout = new BorderPane();
+        rootLayout.getStyleClass().add("game-background");
+        rootLayout.setPadding(new Insets(20));
 
-        // Panel superior con nombres de jugadores y timer
-        HBox playersPanel = new HBox(50);
-        playersPanel.setAlignment(Pos.CENTER);
+        HBox header = createHeader();
+        rootLayout.setTop(header);
 
-        VBox player1Box = createPlayerBox(playerName, playerIconImage, true);
-        VBox player2Box = createPlayerBox(opponentName, opponentIconImage, false);
+        VBox centerGameArea = createCenterGameArea();
+        rootLayout.setCenter(centerGameArea);
         
-        // Timer en el centro
+        HBox footer = createFooter();
+        rootLayout.setBottom(footer);
+
+        scene = new Scene(rootLayout, 1000, 700);
+        scene.getStylesheets().add(getClass().getResource("/Styles/game.css").toExternalForm());
+    }
+
+    private HBox createHeader() {
+        HBox headerBox = new HBox();
+        headerBox.getStyleClass().add("header-container");
+
+        VBox player1VBox = new VBox(10);
+        player1VBox.setAlignment(Pos.CENTER);
+        ImageView player1Icon = new ImageView(playerIconImage);
+        player1Icon.setFitHeight(50);
+        player1Icon.setFitWidth(50);
+        player1Icon.getStyleClass().add("player-icon");
+        player1Label = new Label(playerName);
+        player1Label.getStyleClass().add("player-name");
+        player1VBox.getChildren().addAll(player1Icon, player1Label);
+
         timerLabel = new Label("30");
         timerLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
         timerLabel.setTextFill(Color.RED);
+
+        VBox player2VBox = new VBox(10);
+        player2VBox.setAlignment(Pos.CENTER);
+        ImageView player2Icon = new ImageView(opponentIconImage);
+        player2Icon.setFitHeight(50);
+        player2Icon.setFitWidth(50);
+        player2Icon.getStyleClass().add("player-icon");
+        player2Label = new Label(opponentName);
+        player2Label.getStyleClass().add("player-name");
+        player2VBox.getChildren().addAll(player2Icon, player2Label);
         
-        playersPanel.getChildren().addAll(player1Box, timerLabel, player2Box);
-        
-        // Status label
+        Region leftSpacer = new Region();
+        Region rightSpacer = new Region();
+        HBox.setHgrow(leftSpacer, Priority.ALWAYS);
+        HBox.setHgrow(rightSpacer, Priority.ALWAYS);
+
+        headerBox.getChildren().addAll(leftSpacer, player1VBox, timerLabel, player2VBox, rightSpacer);
+        return headerBox;
+    }
+
+    private VBox createCenterGameArea() {
+        VBox centerArea = new VBox(20);
+        centerArea.setAlignment(Pos.CENTER);
+        centerArea.setPadding(new Insets(20));
+
         statusLabel = new Label("Esperando oponente...");
         statusLabel.setFont(Font.font("Arial", FontWeight.BOLD, 18));
-        
-        // Game board
+
         gameBoard = new GridPane();
         gameBoard.setAlignment(Pos.CENTER);
         gameBoard.setHgap(GRID_GAP);
         gameBoard.setVgap(GRID_GAP);
-        
+        gameBoard.getStyleClass().add("game-grid");
+
         initializeGameBoard();
+
+        linePane = new Pane();
+        linePane.getStyleClass().add("line-pane");
+        linePane.setPickOnBounds(false);
         
-        root.getChildren().addAll(playersPanel, statusLabel, gameBoard);
-        scene = new Scene(root, 800, 600);
+        StackPane boardStackPane = new StackPane();
+        boardStackPane.getStyleClass().add("board-container");
+        boardStackPane.setAlignment(Pos.CENTER);
+        boardStackPane.getChildren().addAll(gameBoard, linePane);
+
+        ImageView oLogo = createImageView(imageO, 150);
+        oLogo.setEffect(createNeonEffect(Color.rgb(255, 45, 241)));
+
+        ImageView xLogo = createImageView(imageX, 150);
+        xLogo.setEffect(createNeonEffect(Color.rgb(0, 255, 238)));
+
+        HBox boardWithLogos = new HBox(30);
+        boardWithLogos.setAlignment(Pos.CENTER);
+        boardWithLogos.getChildren().addAll(oLogo, boardStackPane, xLogo);
+        
+        centerArea.getChildren().addAll(statusLabel, boardWithLogos);
+        return centerArea;
+    }
+    
+    private HBox createFooter() {
+        HBox footerBox = new HBox();
+        footerBox.setAlignment(Pos.CENTER_LEFT);
+        footerBox.setPadding(new Insets(20, 50, 20, 50));
+        footerBox.setMaxWidth(Double.MAX_VALUE);
+        footerBox.setSpacing(20);
+
+        Label titleLabel = new Label("TIC TAC TOE ONLINE");
+        titleLabel.getStyleClass().add("main-title");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Button homeButton = new Button();
+        ImageView homeIcon = createImageView(homeIconImage, ICON_SIZE_HOME / 1.5);
+        homeButton.setGraphic(homeIcon);
+        homeButton.getStyleClass().add("home-button");
+        homeButton.setOnAction(e -> {
+            handleExit();
+        });
+
+        footerBox.getChildren().addAll(titleLabel, spacer, homeButton);
+        return footerBox;
     }
 
-    private VBox createPlayerBox(String name, Image icon, boolean isPlayer1) {
-        VBox playerBox = new VBox(10);
-        playerBox.setAlignment(Pos.CENTER);
-        
-        ImageView playerIcon = new ImageView(icon);
-        playerIcon.setFitHeight(50);
-        playerIcon.setFitWidth(50);
-        
-        Label nameLabel = new Label(name);
-        nameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 16));
-        
-        if (isPlayer1) {
-            player1Label = nameLabel;
-        } else {
-            player2Label = nameLabel;
-        }
-        
-        playerBox.getChildren().addAll(playerIcon, nameLabel);
-        return playerBox;
+    private ImageView createImageView(Image image, double fitSize) {
+        ImageView imageView = new ImageView(image);
+        imageView.setFitWidth(fitSize);
+        imageView.setFitHeight(fitSize);
+        imageView.setPreserveRatio(true);
+        imageView.getStyleClass().add("image-view");
+        return imageView;
+    }
+
+    private DropShadow createNeonEffect(Color color) {
+        DropShadow neonEffect = new DropShadow();
+        neonEffect.setColor(color);
+        neonEffect.setRadius(20);
+        neonEffect.setSpread(0.5);
+        Bloom bloom = new Bloom(0.3);
+        neonEffect.setInput(bloom);
+        return neonEffect;
     }
 
     private void initializeGameBoard() {
@@ -183,37 +265,72 @@ public class GameViewOnLine {
     private Button createGameButton() {
         Button button = new Button();
         button.setPrefSize(CELL_SIZE, CELL_SIZE);
-        button.setStyle("-fx-background-color: white; -fx-border-color: #cccccc;");
+        button.getStyleClass().add("grid-cell");
         button.setDisable(true);
         return button;
     }
 
     private void handleButtonClick(int row, int col) {
-        if (!isMyTurn || buttons[row][col].getGraphic() != null) {
+        LOGGER.info("[handleButtonClick] Attempting click on (" + row + "," + col + "). isMyTurn: " + isMyTurn);
+        Button clickedButton = buttons[row][col];
+        if (clickedButton == null) {
+            LOGGER.severe("[handleButtonClick] Button at (" + row + "," + col + ") is NULL!");
             return;
         }
 
+        if (!isMyTurn || clickedButton.getGraphic() != null) {
+            if (!isMyTurn) {
+                LOGGER.warning("[handleButtonClick] Not my turn.");
+            }
+            if (clickedButton.getGraphic() != null) {
+                LOGGER.warning("[handleButtonClick] Button (" + row + "," + col + ") already has a graphic.");
+            }
+            return;
+        }
+
+        LOGGER.info("[handleButtonClick] Proceeding with move for (" + row + "," + col + ")");
         try {
             Map<String, Object> moveData = new HashMap<>();
             moveData.put("row", String.valueOf(row));
             moveData.put("col", String.valueOf(col));
             clientConnection.sendRequest("move", moveData);
             
-            updateButton(row, col, playerSymbol);
+            updateButtonGraphic(row, col, playerSymbol);
             stopTimer();
         } catch (IOException e) {
             LOGGER.severe("Error al enviar movimiento: " + e.getMessage());
-            // Mostrar mensaje de error al usuario
             Platform.runLater(() -> statusLabel.setText("Error de conexión"));
         }
     }
 
-    private void updateButton(int row, int col, String symbol) {
+    private void updateButtonGraphic(int row, int col, String symbol) {
+        if (row < 0 || row >= 3 || col < 0 || col >= 3 || symbol == null) {
+            LOGGER.warning("[updateButtonGraphic] Invalid parameters: row=" + row + ", col=" + col + ", symbol=" + symbol);
+            return;
+        }
+
         Platform.runLater(() -> {
-            ImageView imageView = new ImageView(symbol.equals("X") ? imageX : imageO);
-            imageView.setFitHeight(CELL_SIZE * 0.8);
-            imageView.setFitWidth(CELL_SIZE * 0.8);
-            buttons[row][col].setGraphic(imageView);
+            try {
+                Button button = buttons[row][col];
+                if (button != null) {
+                    button.setGraphic(null); 
+                    Image imageToSet = symbol.equals("X") ? imageX : imageO;
+                    
+                    if (imageToSet != null) {
+                        ImageView imageView = createImageView(imageToSet, CELL_SIZE * 0.8);
+                        button.setGraphic(imageView);
+                        button.setDisable(true);
+                        LOGGER.info("[updateButtonGraphic] Successfully set graphic " + symbol + " on button (" + row + "," + col + ")");
+                    } else {
+                        LOGGER.warning("[updateButtonGraphic] imageToSet is NULL for symbol: " + symbol + " at (" + row + "," + col + ")");
+                    }
+                } else {
+                    LOGGER.warning("[updateButtonGraphic] Button is NULL at position: (" + row + "," + col + ")");
+                }
+            } catch (Exception e) {
+                LOGGER.severe("[updateButtonGraphic] Exception while updating button graphic at (" + row + "," + col + "): " + e.getMessage());
+                e.printStackTrace();
+            }
         });
     }
 
@@ -231,7 +348,6 @@ public class GameViewOnLine {
             if (timeLeft <= 0) {
                 timer.stop();
                 if (isMyTurn) {
-                    // Enviar movimiento aleatorio si se acaba el tiempo
                     makeRandomMove();
                 }
             }
@@ -251,7 +367,6 @@ public class GameViewOnLine {
     }
 
     private void makeRandomMove() {
-        // Buscar una casilla vacía aleatoria
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 if (buttons[i][j].getGraphic() == null) {
@@ -347,7 +462,6 @@ public class GameViewOnLine {
             statusLabel.setText("Esperando a otro jugador para iniciar la partida...");
             setAllButtonsDisabled(true);
             
-            // Actualizar el nombre del jugador actual si está disponible
             if (data != null && data.containsKey("playerName")) {
                 playerName = data.get("playerName").toString();
                 Label player1Label = (Label) scene.lookup(".player-name");
@@ -361,7 +475,6 @@ public class GameViewOnLine {
     private void handleLoginConfirm(Map<String, Object> data) {
         Platform.runLater(() -> {
             statusLabel.setText("Conectado al servidor. Esperando oponente...");
-            // Enviar solicitud de partida
             try {
                 Map<String, Object> requestData = new HashMap<>();
                 requestData.put("playerName", playerName);
@@ -376,14 +489,11 @@ public class GameViewOnLine {
     private void handleGameStart(Map<String, Object> data) {
         Platform.runLater(() -> {
             LOGGER.info("Handling gameStart: " + data);
-            // Obtener los datos del juego
             String player1NameFromServer = (String) data.get("player1");
             String player2NameFromServer = (String) data.get("player2");
-            String symbol1 = (String) data.get("symbol1"); // Typically "X"
-            String symbol2 = (String) data.get("symbol2"); // Typically "O"
+            String symbol1 = (String) data.get("symbol1");
+            String symbol2 = (String) data.get("symbol2");
             
-            // Determinar si somos el jugador 1 o 2
-            // Ensure playerName is not null and matches one of the server player names
             if (this.playerName == null) {
                 LOGGER.severe("Error: playerName is null in handleGameStart");
                 statusLabel.setText("Error de configuración del jugador.");
@@ -396,26 +506,23 @@ public class GameViewOnLine {
             if (isPlayer1) {
                 this.playerSymbol = symbol1;
                 this.opponentName = player2NameFromServer;
-                this.isMyTurn = true; // Player 1 (X) usually starts
-                 LOGGER.info("Client is Player 1 (" + this.playerSymbol + "). Opponent: " + this.opponentName);
+                this.isMyTurn = true;
+                LOGGER.info("Client is Player 1 (" + this.playerSymbol + "). Opponent: " + this.opponentName);
             } else if (isPlayer2) {
                 this.playerSymbol = symbol2;
                 this.opponentName = player1NameFromServer;
-                this.isMyTurn = false; // Player 2 (O) waits for Player 1's move
+                this.isMyTurn = false;
                 LOGGER.info("Client is Player 2 (" + this.playerSymbol + "). Opponent: " + this.opponentName);
             } else {
                 LOGGER.severe("Error: Client playerName (" + this.playerName + ") does not match player1 (" + player1NameFromServer + ") or player2 (" + player2NameFromServer + ") from server.");
                 statusLabel.setText("Error al unirse a la partida.");
-                // Optionally, prevent further game actions if roles can't be assigned
                 setAllButtonsDisabled(true);
                 return;
             }
             
-            // Actualizar la interfaz
-            // Ensure player1Label and player2Label are initialized
             if (player1Label == null || player2Label == null) {
-                 LOGGER.severe("Error: Player labels not initialized in handleGameStart.");
-                 return;
+                LOGGER.severe("Error: Player labels not initialized in handleGameStart.");
+                return;
             }
             
             if (isPlayer1) {
@@ -427,13 +534,14 @@ public class GameViewOnLine {
             }
             
             statusLabel.setText(this.isMyTurn ? "Tu turno" : "Turno de " + this.opponentName);
-            
-            // Habilitar/deshabilitar botones según el turno
             setAllButtonsDisabled(!this.isMyTurn);
-            
-            // Iniciar el timer si es nuestro turno
             if (this.isMyTurn) {
+                setAllButtonsDisabled(false);
+                LOGGER.info("[handleGameStart] Botones habilitados para el turno del jugador");
                 startTimer();
+            } else {
+                setAllButtonsDisabled(true);
+                LOGGER.info("[handleGameStart] Botones deshabilitados, turno del oponente.");
             }
         });
     }
@@ -444,15 +552,12 @@ public class GameViewOnLine {
             return;
         }
         LOGGER.info("Handling yourTurn: " + data);
-
         try {
             this.isMyTurn = true;
-            // String currentPlayerName = (String) data.get("currentPlayer"); // Redundant if we know it's our turn
-            // String currentSymbol = (String) data.get("symbol"); // This should be our playerSymbol
-
             Platform.runLater(() -> {
                 statusLabel.setText("Tu turno (" + this.playerSymbol + ")");
-                setAllButtonsDisabled(false); // Enable buttons for player's move
+                setAllButtonsDisabled(false);
+                LOGGER.info("[handleYourTurn] Botones habilitados para el turno del jugador");
                 startTimer();
             });
         } catch (Exception e) {
@@ -470,11 +575,11 @@ public class GameViewOnLine {
         
         try {
             this.isMyTurn = false;
-            // String opponentPlayerName = (String) data.get("currentPlayer"); // This is the opponent's name
 
             Platform.runLater(() -> {
                 statusLabel.setText("Turno de " + this.opponentName);
-                setAllButtonsDisabled(true); // Disable buttons as it's opponent's turn
+                setAllButtonsDisabled(true);
+                LOGGER.info("[handleOpponentTurn] Botones deshabilitados, turno del oponente.");
                 stopTimer();
             });
         } catch (Exception e) {
@@ -489,24 +594,21 @@ public class GameViewOnLine {
             return;
         }
         LOGGER.info("Handling gameState: " + data);
-
         try {
             String boardJson = (String) data.get("board");
-            String lastMove = (String) data.get("lastMove"); // e.g., "0,1"
-            // String currentSymbolMakingMove = (String) data.get("symbol"); // Symbol that made the last move
-            // String nextPlayerName = (String) data.get("currentPlayer"); // Player whose turn it is next (not needed if using yourTurn/opponentTurn)
-
-
+            String lastMove = (String) data.get("lastMove");
             Platform.runLater(() -> {
-                // Actualizar el tablero
                 Type boardType = new TypeToken<String[][]>(){}.getType();
                 String[][] boardArray = gson.fromJson(boardJson, boardType);
-                
                 if (boardArray == null) {
                     LOGGER.severe("Error: Board array is null after parsing from JSON: " + boardJson);
                     return;
                 }
-
+                for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 3; j++) {
+                        buttons[i][j].setGraphic(null);
+                    }
+                }
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
                         if (boardArray[i][j] != null && !boardArray[i][j].isEmpty()) {
@@ -514,39 +616,29 @@ public class GameViewOnLine {
                         }
                     }
                 }
-
-                // Si se especificó el último movimiento, resaltarlo (opcional)
                 if (lastMove != null) {
                     try {
                         String[] coords = lastMove.split(",");
                         if (coords.length == 2) {
                             int row = Integer.parseInt(coords[0]);
                             int col = Integer.parseInt(coords[1]);
-                            // highlightButton(row, col); // Assuming highlightButton is defined
                         }
                     } catch (NumberFormatException e) {
                         LOGGER.warning("Error parsing lastMove coordinates: " + lastMove + " - " + e.getMessage());
                     }
                 }
-                
-                // No cambiar el turno aquí, esperar a yourTurn/opponentTurn
-                // La lógica de turnos y habilitación de botones se maneja en handleYourTurn/handleOpponentTurn
-                // statusLabel.setText(isMyTurn ? "Tu turno" : "Turno de " + opponentName);
-                // setAllButtonsDisabled(!isMyTurn);
             });
         } catch (Exception e) {
             LOGGER.severe("Error al procesar estado del juego: " + e.getMessage());
-            e.printStackTrace(); // Print stack trace for detailed debugging
+            e.printStackTrace();
         }
     }
 
     private void highlightButton(int row, int col) {
         if (row >= 0 && row < 3 && col >= 0 && col < 3) {
             Button button = buttons[row][col];
-            // Agregar efecto de resaltado
             button.setStyle(button.getStyle() + "; -fx-effect: dropshadow(three-pass-box, rgba(0,0,255,0.8), 10, 0, 0, 0);");
             
-            // Remover el resaltado después de un segundo
             Timeline timeline = new Timeline(new KeyFrame(
                 Duration.seconds(1),
                 ae -> button.setStyle(button.getStyle().replace("; -fx-effect: dropshadow(three-pass-box, rgba(0,0,255,0.8), 10, 0, 0, 0);", ""))
@@ -558,6 +650,11 @@ public class GameViewOnLine {
     private void updateBoard(Map<String, String> board) {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
+                buttons[i][j].setGraphic(null);
+            }
+        }
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
                 String key = i + "," + j;
                 String value = board.get(key);
                 if (value != null && !value.isEmpty()) {
@@ -567,41 +664,11 @@ public class GameViewOnLine {
         }
     }
 
-    private void updateButtonGraphic(int row, int col, String symbol) {
-        if (row < 0 || row >= 3 || col < 0 || col >= 3 || symbol == null) {
-            LOGGER.warning("Intento de actualizar botón con parámetros inválidos: row=" + row + ", col=" + col + ", symbol=" + symbol);
-            return;
-        }
-        
-        Platform.runLater(() -> {
-            try {
-                Button button = buttons[row][col];
-                if (button != null) {
-                    Image image = symbol.equals("X") ? imageX : imageO;
-                    if (image != null) {
-                        ImageView imageView = createImageView(image, CELL_SIZE * 0.8);
-                        imageView.setEffect(createNeonEffect(symbol.equals("X") ? 
-                            Color.rgb(0, 255, 238) : Color.rgb(255, 45, 241)));
-                        button.setGraphic(imageView);
-                        button.setDisable(true);
-                    } else {
-                        LOGGER.warning("Imagen nula para el símbolo: " + symbol);
-                    }
-                } else {
-                    LOGGER.warning("Botón nulo en posición: " + row + "," + col);
-                }
-            } catch (Exception e) {
-                LOGGER.severe("Error actualizando gráfico del botón: " + e.getMessage());
-            }
-        });
-    }
-
     private void handleMoveError(Map<String, Object> data) {
         Platform.runLater(() -> {
             String message = data != null && data.containsKey("message") ? 
                 String.valueOf(data.get("message")) : "Error al realizar el movimiento";
             statusLabel.setText("Error: " + message);
-            // Reactivar los botones
             setAllButtonsDisabled(false);
         });
     }
@@ -618,7 +685,6 @@ public class GameViewOnLine {
             }
             setAllButtonsDisabled(true);
             
-            // Actualizar el tablero final si está disponible
             @SuppressWarnings("unchecked")
             Map<String, String> finalBoard = gson.fromJson((String)data.get("board"), Map.class);
             if (finalBoard != null) {
@@ -631,7 +697,6 @@ public class GameViewOnLine {
     private void handleOpponentDisconnected(Map<String, Object> data) {
         Platform.runLater(() -> {
             statusLabel.setText(data.get("message").toString());
-            // Deshabilitar todos los botones
             for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < 3; j++) {
                     buttons[i][j].setDisable(true);
@@ -658,13 +723,10 @@ public class GameViewOnLine {
             moveData.put("row", String.valueOf(row));
             moveData.put("col", String.valueOf(col));
             
-            // Deshabilitar todos los botones mientras esperamos respuesta
             setAllButtonsDisabled(true);
             
-            // Enviar movimiento al servidor
             clientConnection.sendRequest("move", moveData);
             
-            // Actualizar estado local
             statusLabel.setText("Esperando respuesta del oponente...");
         } catch (Exception e) {
             LOGGER.severe("Error al enviar movimiento: " + e.getMessage());
@@ -686,13 +748,15 @@ public class GameViewOnLine {
     }
 
     private void setAllButtonsDisabled(boolean disabled) {
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (buttons[i][j].getGraphic() == null) {
-                    buttons[i][j].setDisable(disabled);
+        Platform.runLater(() -> {
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    if (buttons[i][j].getGraphic() == null) {
+                        buttons[i][j].setDisable(disabled);
+                    }
                 }
             }
-        }
+        });
     }
 
     private void updateStatus() {
@@ -743,7 +807,6 @@ public class GameViewOnLine {
                 String message = (String) data.get("message");
                 statusLabel.setText(message);
                 
-                // Actualizar el tablero si se proporciona
                 String boardJson = (String) data.get("board");
                 if (boardJson != null) {
                     Type boardType = new TypeToken<String[][]>(){}.getType();
@@ -758,24 +821,6 @@ public class GameViewOnLine {
                 }
             });
         }
-    }
-
-    private ImageView createImageView(Image image, double fitSize) {
-        ImageView imageView = new ImageView(image);
-        imageView.setFitWidth(fitSize);
-        imageView.setFitHeight(fitSize);
-        imageView.setPreserveRatio(true);
-        return imageView;
-    }
-
-    private Effect createNeonEffect(Color color) {
-        DropShadow neonEffect = new DropShadow();
-        neonEffect.setColor(color);
-        neonEffect.setSpread(0.5);
-        neonEffect.setRadius(20);
-        Bloom bloom = new Bloom(0.3);
-        neonEffect.setInput(bloom);
-        return neonEffect;
     }
 
     public Scene getScene() {
