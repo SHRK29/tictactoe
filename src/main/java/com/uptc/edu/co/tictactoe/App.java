@@ -29,6 +29,7 @@ public class App extends Application {
         primaryStage.setTitle("TicTacToe");
         mostrarLoginView();
         primaryStage.show();
+
     }
 
     public static void mostrarLoginView() {

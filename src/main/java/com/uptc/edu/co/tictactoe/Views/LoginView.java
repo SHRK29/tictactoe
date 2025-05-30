@@ -138,7 +138,6 @@ public class LoginView {
             App.cambiarEscena(gameView.getScene(), "Tic Tac Toe - Modo Local");
         });
 
-        // En el método configurarAccionesBotones(), reemplazar el action del
         // onlineButton:
         onlineButton.setOnAction(e -> {
             final String playerName = nameField.getText().trim().isEmpty() ? "Jugador Online"
@@ -167,6 +166,7 @@ public class LoginView {
                         Response response = connection.receiveResponse();
 
                         Platform.runLater(() -> {
+                            loadingView.stopAnimation(); // Detener la animación de carga
                             if (response != null && "REGISTRATION_SUCCESS".equals(response.getType())) {
                                 // 5. Si el registro es exitoso, iniciar el juego online
                                 GameViewOnLine gameView = new GameViewOnLine(playerName, connection);
@@ -190,12 +190,14 @@ public class LoginView {
                         });
                     } else {
                         Platform.runLater(() -> {
+                            loadingView.stopAnimation(); 
                             System.err.println("No se pudo establecer conexión con el servidor");
                             App.cambiarEscena(scene, "Tic Tac Toe - Login");
                         });
                     }
                 } catch (IOException ex) {
                     Platform.runLater(() -> {
+                        loadingView.stopAnimation(); 
                         System.err.println("Error de conexión: " + ex.getMessage());
                         App.cambiarEscena(scene, "Tic Tac Toe - Login");
                     });
