@@ -1,6 +1,7 @@
 package com.uptc.edu.co.tictactoe.Views;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import com.uptc.edu.co.tictactoe.App;
@@ -32,6 +33,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.stage.Stage;
 
 public class GameViewOnLine {
     private Scene scene;
@@ -145,7 +147,7 @@ public class GameViewOnLine {
         timerLabel = new Label("30");
         timerLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
         timerLabel.setTextFill(Color.RED);
-
+        
         VBox player2VBox = new VBox(10);
         player2VBox.setAlignment(Pos.CENTER);
         ImageView player2Icon = new ImageView(opponentIconImage);
@@ -172,15 +174,15 @@ public class GameViewOnLine {
 
         statusLabel = new Label("Esperando oponente...");
         statusLabel.setFont(Font.font("Arial", FontWeight.BOLD, 18));
-
+        
         gameBoard = new GridPane();
         gameBoard.setAlignment(Pos.CENTER);
         gameBoard.setHgap(GRID_GAP);
         gameBoard.setVgap(GRID_GAP);
         gameBoard.getStyleClass().add("game-grid");
-
+        
         initializeGameBoard();
-
+        
         linePane = new Pane();
         linePane.getStyleClass().add("line-pane");
         linePane.setPickOnBounds(false);
@@ -348,29 +350,35 @@ public class GameViewOnLine {
             return;
         }
 
-        Platform.runLater(() -> {
-            try {
-                Button button = buttons[row][col];
-                if (button != null) {
-                    button.setGraphic(null); 
-                    Image imageToSet = symbol.equals("X") ? imageX : imageO;
+        try {
+            Button button = buttons[row][col];
+            if (button != null) {
+                button.setGraphic(null); 
+                Image imageToSet = symbol.equals("X") ? imageX : imageO;
+                
+                if (imageToSet != null) {
+                    ImageView imageView = createImageView(imageToSet, CELL_SIZE * 0.8);
                     
-                    if (imageToSet != null) {
-                        ImageView imageView = createImageView(imageToSet, CELL_SIZE * 0.8);
-                        button.setGraphic(imageView);
-                        button.setDisable(true);
-                        LOGGER.info("[updateButtonGraphic] Successfully set graphic " + symbol + " on button (" + row + "," + col + ")");
-                    } else {
-                        LOGGER.warning("[updateButtonGraphic] imageToSet is NULL for symbol: " + symbol + " at (" + row + "," + col + ")");
+                    // Apply neon effect specific to X or O
+                    if (symbol.equals("X")) {
+                        imageView.setEffect(createNeonEffect(Color.rgb(0, 255, 238))); // Teal for X
+                    } else { // "O"
+                        imageView.setEffect(createNeonEffect(Color.rgb(255, 45, 241))); // Pink for O
                     }
+                    
+                    button.setGraphic(imageView);
+                    button.setDisable(true);
+                    LOGGER.info("[updateButtonGraphic] Successfully set graphic " + symbol + " on button (" + row + "," + col + ")");
                 } else {
-                    LOGGER.warning("[updateButtonGraphic] Button is NULL at position: (" + row + "," + col + ")");
+                    LOGGER.warning("[updateButtonGraphic] imageToSet is NULL for symbol: " + symbol + " at (" + row + "," + col + ")");
                 }
-            } catch (Exception e) {
-                LOGGER.severe("[updateButtonGraphic] Exception while updating button graphic at (" + row + "," + col + "): " + e.getMessage());
-                e.printStackTrace();
+            } else {
+                LOGGER.warning("[updateButtonGraphic] Button is NULL at position: (" + row + "," + col + ")");
             }
-        });
+        } catch (Exception e) {
+            LOGGER.severe("[updateButtonGraphic] Exception while updating button graphic at (" + row + "," + col + "): " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void startTimer() {
@@ -468,6 +476,9 @@ public class GameViewOnLine {
                     break;
                 case "moveError":
                     handleMoveError(response.getData());
+                    break;
+                case "roundEnd":
+                    handleRoundEnd(response.getData());
                     break;
                 case "gameOver":
                     handleGameOver(response.getData());
@@ -611,7 +622,7 @@ public class GameViewOnLine {
             return;
         }
         LOGGER.info("Handling opponentTurn: " + data);
-        
+
         try {
             this.isMyTurn = false;
 
@@ -657,10 +668,10 @@ public class GameViewOnLine {
                 }
                 if (lastMove != null) {
                     try {
-                        String[] coords = lastMove.split(",");
-                        if (coords.length == 2) {
-                            int row = Integer.parseInt(coords[0]);
-                            int col = Integer.parseInt(coords[1]);
+                    String[] coords = lastMove.split(",");
+                    if (coords.length == 2) {
+                        int row = Integer.parseInt(coords[0]);
+                        int col = Integer.parseInt(coords[1]);
                         }
                     } catch (NumberFormatException e) {
                         LOGGER.warning("Error parsing lastMove coordinates: " + lastMove + " - " + e.getMessage());
@@ -712,25 +723,286 @@ public class GameViewOnLine {
         });
     }
 
+    private void handleRoundEnd(Map<String, Object> data) {
+        Platform.runLater(() -> {
+            LOGGER.info("Handling roundEnd: " + data);
+            stopTimer();
+            setAllButtonsDisabled(true);
+
+            String winnerName = data.get("winner") != null ? data.get("winner").toString() : null;
+            boolean isDraw = "draw".equalsIgnoreCase(winnerName);
+            String[][] finalBoardArray = null;
+
+            if (data.containsKey("board")) {
+                String boardJson = (String) data.get("board");
+                Type boardType = new TypeToken<String[][]>(){}.getType();
+                finalBoardArray = gson.fromJson(boardJson, boardType);
+                if (finalBoardArray != null) {
+                    for (int i = 0; i < 3; i++) {
+                        for (int j = 0; j < 3; j++) {
+                            buttons[i][j].setGraphic(null);
+                            if (finalBoardArray[i][j] != null && !finalBoardArray[i][j].isEmpty()) {
+                                updateButtonGraphic(i, j, finalBoardArray[i][j]);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            String inferredWinnerSymbol = null;
+
+            if (data.containsKey("winningLine")) {
+                try {
+                    String lineJson = (String) data.get("winningLine");
+                     if (lineJson != null && !lineJson.isEmpty()) {
+                        Type type = new TypeToken<Map<String, Double>>(){}.getType();
+                        Map<String, Double> lineData = gson.fromJson(lineJson, type);
+
+                        if (lineData != null) {
+                            int startRow = lineData.get("startRow").intValue();
+                            int startCol = lineData.get("startCol").intValue();
+                            int endRow = lineData.get("endRow").intValue();
+                            int endCol = lineData.get("endCol").intValue();
+                            drawWinningLineOnline(startRow, startCol, endRow, endCol);
+                            
+                            if (finalBoardArray != null && startRow >= 0 && startRow < 3 && startCol >= 0 && startCol < 3) {
+                                inferredWinnerSymbol = finalBoardArray[startRow][startCol];
+                            }
+                        } else {
+                            LOGGER.warning("Parsed winningLine data is null from JSON: " + lineJson);
+                        }
+                    } else {
+                         LOGGER.warning("winningLine JSON string is null or empty.");
+                    }
+                } catch (JsonSyntaxException e) {
+                    LOGGER.severe("Error parsing winningLine JSON in handleRoundEnd: " + e.getMessage() + " JSON: " + data.get("winningLine"));
+                } catch (Exception e) {
+                    LOGGER.severe("Error processing winningLine data in handleRoundEnd: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+            
+            final String finalWinnerSymbolForIcon = inferredWinnerSymbol;
+
+            long delayMillis = data.containsKey("winningLine") && !isDraw ? 1500 : (isDraw ? 500 : 0);
+
+            Timeline showResultTimeline = new Timeline(new KeyFrame(Duration.millis(delayMillis), ae -> {
+                Image iconForWinView = null;
+                String displayWinnerName = "Error";
+
+                if (isDraw) {
+                    displayWinnerName = "Empate";
+                    iconForWinView = imageX;
+                } else if (winnerName != null) {
+                    displayWinnerName = winnerName;
+                     if ("X".equals(finalWinnerSymbolForIcon)) {
+                        iconForWinView = imageX;
+                    } else if ("O".equals(finalWinnerSymbolForIcon)) {
+                        iconForWinView = imageO;
+                    } else {
+                        iconForWinView = imageX; 
+                        LOGGER.warning("Could not determine winner symbol for WinView icon. Winner: " + winnerName + ", Inferred Symbol: " + finalWinnerSymbolForIcon);
+                    }
+                } else {
+                    displayWinnerName = "Error en resultado";
+                    iconForWinView = imageX;
+                    LOGGER.warning("Winner name is null for a non-draw roundEnd scenario.");
+                }
+                
+                WinView winView = new WinView(displayWinnerName, isDraw, iconForWinView);
+                Stage currentStage = (Stage) scene.getWindow();
+                if (currentStage != null) {
+                    currentStage.setScene(winView.getScene());
+                    winView.getMainMenuButton().setOnAction(e -> {
+                         try {
+                            clientConnection.sendRequest("exit", new HashMap<>());
+                            if (listenerThread != null) listenerThread.interrupt();
+                            clientConnection.close();
+                         } catch (IOException ex) {
+                             LOGGER.severe("Error closing connection on exit from WinView: " + ex.getMessage());
+                         }
+                         App.mostrarLoginView();
+                    });
+                     winView.getPlayAgainButton().setOnAction(e -> {
+                         try {
+                            clientConnection.sendRequest("exit", new HashMap<>());
+                            if (listenerThread != null) listenerThread.interrupt();
+                            clientConnection.close();
+                         } catch (IOException ex) {
+                            LOGGER.severe("Error closing connection on play again from WinView: " + ex.getMessage());
+                         }
+                         App.mostrarLoginView();
+                    });
+                    currentStage.show();
+                } else {
+                    LOGGER.severe("Cannot get current stage to show WinView after round end.");
+                }
+            }));
+            showResultTimeline.play();
+
+            if (isDraw) {
+                statusLabel.setText("¡Empate en esta ronda! - Jugaste con " + playerSymbol);
+            } else if (winnerName != null) {
+                statusLabel.setText(winnerName.equals(playerName) ?
+                    "¡Ganaste esta ronda! - Jugaste con " + playerSymbol :
+                    "¡" + winnerName + " ganó esta ronda! - Jugaste con " + playerSymbol);
+            }
+        });
+    }
+
     private void handleGameOver(Map<String, Object> data) {
         Platform.runLater(() -> {
-            String winner = data.get("winner") != null ? data.get("winner").toString() : null;
-            if (winner != null) {
-                statusLabel.setText(winner.equals(playerName) ? 
-                    "¡Has ganado! - Jugaste con " + playerSymbol : 
-                    "¡Ha ganado " + winner + "! - Jugaste con " + playerSymbol);
-            } else if ("draw".equals(data.get("result"))) {
-                statusLabel.setText("¡Empate! - Jugaste con " + playerSymbol);
-            }
+            LOGGER.info("Handling gameOver: " + data);
+            stopTimer(); 
             setAllButtonsDisabled(true);
+
+            String winnerName = data.get("winner") != null ? data.get("winner").toString() : null;
+            boolean isDraw = "draw".equalsIgnoreCase(winnerName);
             
-            @SuppressWarnings("unchecked")
-            Map<String, String> finalBoard = gson.fromJson((String)data.get("board"), Map.class);
-            if (finalBoard != null) {
-                updateBoard(finalBoard);
+            String[][] finalBoardArray = null;
+            String inferredWinnerSymbol = null;
+
+            if (data.containsKey("board")) {
+                String boardJson = (String) data.get("board");
+                Type boardType = new TypeToken<String[][]>(){}.getType();
+                finalBoardArray = gson.fromJson(boardJson, boardType); 
+                if (finalBoardArray != null) {
+                    for (int i = 0; i < 3; i++) {
+                        for (int j = 0; j < 3; j++) {
+                            buttons[i][j].setGraphic(null); 
+                            if (finalBoardArray[i][j] != null && !finalBoardArray[i][j].isEmpty()) {
+                                updateButtonGraphic(i, j, finalBoardArray[i][j]);
+                            }
+                        }
+                    }
+                }
             }
-            stopTimer();
+
+            if (data.containsKey("winningLine")) {
+                try {
+                    String lineJson = (String) data.get("winningLine");
+                     if (lineJson != null && !lineJson.isEmpty()) {
+                        Type type = new TypeToken<Map<String, Double>>(){}.getType();
+                        Map<String, Double> lineData = gson.fromJson(lineJson, type);
+
+                        if (lineData != null) {
+                            int startRow = lineData.get("startRow").intValue();
+                            int startCol = lineData.get("startCol").intValue();
+                            int endRow = lineData.get("endRow").intValue();
+                            int endCol = lineData.get("endCol").intValue();
+                            drawWinningLineOnline(startRow, startCol, endRow, endCol);
+                            
+                            if (finalBoardArray != null && startRow >= 0 && startRow < 3 && startCol >= 0 && startCol < 3) {
+                                inferredWinnerSymbol = finalBoardArray[startRow][startCol];
+                            }
+                        } else {
+                            LOGGER.warning("Parsed winningLine data is null from JSON: " + lineJson);
+                        }
+                    } else {
+                         LOGGER.warning("winningLine JSON string is null or empty.");
+                    }
+                } catch (JsonSyntaxException e) {
+                    LOGGER.severe("Error parsing winningLine JSON in handleGameOver: " + e.getMessage() + " JSON: " + data.get("winningLine"));
+                } catch (Exception e) {
+                    LOGGER.severe("Error processing winningLine data in handleGameOver: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+
+            long delayMillisGameOver = data.containsKey("winningLine") && !isDraw ? 1500 : (isDraw ? 500 : 0);
+            final String finalWinnerSymbolForIconDisplay = inferredWinnerSymbol;
+
+            Timeline showResultTimelineGameOver = new Timeline(new KeyFrame(Duration.millis(delayMillisGameOver), ae -> {
+                Image iconForWinView = null;
+                String displayWinnerName = "Error";
+
+                if (isDraw) {
+                    displayWinnerName = "Empate";
+                    iconForWinView = imageX; 
+                } else if (winnerName != null) {
+                    displayWinnerName = winnerName;
+                    if ("X".equals(finalWinnerSymbolForIconDisplay)) {
+                        iconForWinView = imageX;
+                    } else if ("O".equals(finalWinnerSymbolForIconDisplay)) {
+                        iconForWinView = imageO;
+                    } else {
+                        iconForWinView = imageX; 
+                        LOGGER.warning("Could not determine winner symbol for WinView icon in GameOver. Winner: " + winnerName + ", Inferred Symbol: " + finalWinnerSymbolForIconDisplay);
+                    }
+                } else {
+                    displayWinnerName = "Error en resultado";
+                    iconForWinView = imageX; 
+                    LOGGER.warning("Winner name is null for a non-draw gameOver scenario.");
+                }
+                
+                WinView winView = new WinView(displayWinnerName, isDraw, iconForWinView);
+                Stage currentStage = (Stage) scene.getWindow();
+                if (currentStage != null) {
+                    currentStage.setScene(winView.getScene());
+                     winView.getMainMenuButton().setOnAction(e -> {
+                         try {
+                            clientConnection.sendRequest("exit", new HashMap<>());
+                            if (listenerThread != null) listenerThread.interrupt();
+                            clientConnection.close();
+                         } catch (IOException ex) {
+                             LOGGER.severe("Error closing connection on exit from WinView (GameOver): " + ex.getMessage());
+                         }
+                         App.mostrarLoginView();
+                    });
+                     winView.getPlayAgainButton().setOnAction(e -> {
+                         try {
+                            clientConnection.sendRequest("exit", new HashMap<>()); 
+                            if (listenerThread != null) listenerThread.interrupt();
+                            clientConnection.close();
+                         } catch (IOException ex) {
+                            LOGGER.severe("Error closing connection on play again from WinView (GameOver): " + ex.getMessage());
+                         }
+                         App.mostrarLoginView();
+                    });
+                    currentStage.show();
+                } else {
+                    LOGGER.severe("Cannot get current stage to show WinView after game over.");
+                }
+            }));
+            showResultTimelineGameOver.play();
+
+            if (isDraw) {
+                statusLabel.setText("¡Juego terminado en Empate! - Jugaste con " + playerSymbol);
+            } else if (winnerName != null) {
+                statusLabel.setText(winnerName.equals(playerName) ?
+                    "¡Ganaste el Juego! - Jugaste con " + playerSymbol :
+                    "¡" + winnerName + " ganó el Juego! - Jugaste con " + playerSymbol);
+            } else {
+                 statusLabel.setText("Juego terminado. No se determinó un ganador claro.");
+            }
         });
+    }
+
+    private void drawWinningLineOnline(int startRow, int startCol, int endRow, int endCol) {
+        if (linePane == null) {
+            LOGGER.warning("linePane es null, no se puede dibujar la línea ganadora.");
+            return;
+        }
+        // Limpiar línea anterior si existe
+        if (winningLine != null) {
+            linePane.getChildren().remove(winningLine);
+        }
+
+        // Calcular puntos de inicio y fin para la línea en el Pane
+        // El centro de la celda es (CELL_SIZE / 2), y las líneas deben ir de centro a centro
+        double startX = startCol * (CELL_SIZE + GRID_GAP) + CELL_SIZE / 2;
+        double startY = startRow * (CELL_SIZE + GRID_GAP) + CELL_SIZE / 2;
+        double endX = endCol * (CELL_SIZE + GRID_GAP) + CELL_SIZE / 2;
+        double endY = endRow * (CELL_SIZE + GRID_GAP) + CELL_SIZE / 2;
+
+        winningLine = new Line(startX, startY, endX, endY);
+        winningLine.setStroke(Color.LIMEGREEN); // Color verde brillante
+        winningLine.setStrokeWidth(LINE_THICKNESS * 2); // Línea más gruesa para destacar
+        winningLine.setStrokeLineCap(StrokeLineCap.ROUND);
+        winningLine.setEffect(createNeonEffect(Color.LIMEGREEN)); // Efecto neón verde
+
+        linePane.getChildren().add(winningLine);
+        LOGGER.info("Línea ganadora dibujada de (" + startRow + "," + startCol + ") a (" + endRow + "," + endCol + ")");
     }
 
     private void handleOpponentDisconnected(Map<String, Object> data) {
@@ -788,13 +1060,13 @@ public class GameViewOnLine {
 
     private void setAllButtonsDisabled(boolean disabled) {
         Platform.runLater(() -> {
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    if (buttons[i][j].getGraphic() == null) {
-                        buttons[i][j].setDisable(disabled);
-                    }
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (buttons[i][j].getGraphic() == null) {
+                    buttons[i][j].setDisable(disabled);
                 }
             }
+        }
         });
     }
 
