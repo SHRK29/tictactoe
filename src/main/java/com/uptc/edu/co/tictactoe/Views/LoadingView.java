@@ -1,96 +1,45 @@
 package com.uptc.edu.co.tictactoe.Views;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
-import javafx.util.Duration;
-import com.uptc.edu.co.tictactoe.App;
-
-import java.util.ArrayList;
-import java.util.List;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 public class LoadingView {
-
-    private static final int TOTAL_FRAMES = 10;
-    private static final int FRAME_RATE = 85; // ms por frame
-    private Scene scene;
-    private Timeline animation;
-
-    public LoadingView() {
-        List<Image> frames = loadAnimationFrames();
-
-        if (frames.isEmpty()) {
-            System.err.println("No se cargaron imágenes para la animación.");
-            return;
-        }
-
-        ImageView imageView = createImageView(frames.get(0));
-        this.animation = createAnimation(imageView, frames);
-
-        StackPane root = new StackPane(imageView);
-        root.setStyle("-fx-background-color: #410445;");
-
-        this.scene = new Scene(root, imageView.getFitWidth(), imageView.getFitHeight());
-    }
-
-    private List<Image> loadAnimationFrames() {
-        List<Image> frames = new ArrayList<>();
-        for (int i = 1; i <= TOTAL_FRAMES; i++) {
-            String imagePath = "/Icons/Loading/Frame" + i + ".png";
-            try {
-                Image img = new Image(getClass().getResourceAsStream(imagePath));
-                if (!img.isError()) {
-                    frames.add(img);
-                } else {
-                    System.err.println("Error cargando imagen: " + imagePath);
-                }
-            } catch (Exception e) {
-                System.err.println("No se pudo cargar: " + imagePath);
-            }
-        }
-        return frames;
-    }
-
-    private ImageView createImageView(Image initialFrame) {
-        ImageView imageView = new ImageView(initialFrame);
-        imageView.setPreserveRatio(true);
-        imageView.setFitWidth(initialFrame.getWidth());
-        imageView.setFitHeight(initialFrame.getHeight());
-        return imageView;
-    }
-
-    private Timeline createAnimation(ImageView imageView, List<Image> frames) {
-        Timeline timeline = new Timeline();
-        for (int i = 0; i < frames.size(); i++) {
-            final int index = i;
-            timeline.getKeyFrames().add(
-                    new KeyFrame(Duration.millis(FRAME_RATE * i), e -> {
-                        imageView.setImage(frames.get(index));
-                    }));
-        }
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        return timeline;
-    }
-
+    private static Stage stage;
+    
     public void show() {
-        if (scene != null) {
-            App.cambiarEscena(scene, "Cargando...");
-            if (animation != null) {
-                animation.play();
-            }
-        }
+        stage = new Stage();
+        stage.initStyle(StageStyle.UNDECORATED);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        
+        VBox layout = new VBox(20);
+        layout.setAlignment(Pos.CENTER);
+        layout.getStyleClass().add("loading-background");
+        
+        ProgressIndicator progress = new ProgressIndicator();
+        progress.setMaxSize(100, 100);
+        
+        Label label = new Label("Conectando al servidor...");
+        label.getStyleClass().add("loading-text");
+        
+        layout.getChildren().addAll(progress, label);
+        
+        Scene scene = new Scene(layout, 300, 200);
+        scene.getStylesheets().add(getClass().getResource("/Styles/game.css").toExternalForm());
+        
+        stage.setScene(scene);
+        stage.show();
     }
-
-    public void stopAnimation() {
-        if (animation != null) {
-            animation.stop();
+    
+    public static void close() {
+        if (stage != null) {
+            stage.close();
+            stage = null;
         }
-    }
-
-    public Scene getScene() {
-        return scene;
     }
 }

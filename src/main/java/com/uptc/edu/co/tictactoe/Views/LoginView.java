@@ -33,8 +33,8 @@ public class LoginView {
     private Button vsPcButton;
     private Button howToPlayButton;
     private Button exitButton;
-    private final String SERVER_IP = "localhost"; // Cambia esto según tu configuración
-    private final int SERVER_PORT = 8080; // Cambia esto según tu configuración
+    private final String SERVER_IP = "localhost";
+    private final int SERVER_PORT = 12345; // Actualizado para coincidir con el servidor
 
     public LoginView() {
         // Cargar fuentes con manejo de errores
@@ -141,66 +141,8 @@ public class LoginView {
         // En el método configurarAccionesBotones(), reemplazar el action del
         // onlineButton:
         onlineButton.setOnAction(e -> {
-            final String playerName = nameField.getText().trim().isEmpty() ? "Jugador Online"
-                    : nameField.getText().trim();
-
-            // Mostrar la animación de carga
-            LoadingView loadingView = new LoadingView();
-            loadingView.show();
-
-            // Iniciar conexión en un hilo separado
-            new Thread(() -> {
-                try {
-                    // 1. Establecer conexión con el servidor
-                    Socket socket = new Socket(SERVER_IP, SERVER_PORT);
-                    ClientConnection connection = new ClientConnection(socket);
-
-                    // 2. Verificar si la conexión es exitosa
-                    if (connection.isConnected()) {
-                        // 3. Enviar solicitud de registro con el nombre del jugador
-                        Map<String, Object> params = new HashMap<>();
-                        params.put("playerName", playerName);
-                        Request nameRequest = new Request("REGISTER_PLAYER", params);
-                        connection.sendRequest(nameRequest.getType(), nameRequest.getParams());
-
-                        // 4. Recibir respuesta del servidor
-                        Response response = connection.receiveResponse();
-
-                        Platform.runLater(() -> {
-                            if (response != null && "REGISTRATION_SUCCESS".equals(response.getType())) {
-                                // 5. Si el registro es exitoso, iniciar el juego online
-                                GameViewOnLine gameView = new GameViewOnLine(playerName, connection);
-                                App.cambiarEscena(gameView.getScene(), "Tic Tac Toe - Modo Online");
-                            } else {
-                                // 6. Manejar errores de registro
-                                String errorMessage = "Error al conectar";
-                                if (response != null && response.getStringData("error") != null) {
-                                    errorMessage = response.getStringData("error");
-                                }
-
-                                // Mostrar mensaje de error (puedes implementar un diálogo de error)
-                                System.err.println("Error de conexión: " + errorMessage);
-
-                                // Cerrar la conexión fallida
-                                connection.close();
-
-                                // Volver a la pantalla de login
-                                App.cambiarEscena(scene, "Tic Tac Toe - Login");
-                            }
-                        });
-                    } else {
-                        Platform.runLater(() -> {
-                            System.err.println("No se pudo establecer conexión con el servidor");
-                            App.cambiarEscena(scene, "Tic Tac Toe - Login");
-                        });
-                    }
-                } catch (IOException ex) {
-                    Platform.runLater(() -> {
-                        System.err.println("Error de conexión: " + ex.getMessage());
-                        App.cambiarEscena(scene, "Tic Tac Toe - Login");
-                    });
-                }
-            }).start();
+            final String playerName = nameField.getText().trim().isEmpty() ? "Jugador Online" : nameField.getText().trim();
+            App.iniciarPartidaOnline(playerName);
         });
 
         exitButton.setOnAction(e -> Platform.exit());

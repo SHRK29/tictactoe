@@ -1,99 +1,75 @@
 package com.uptc.edu.co.tictactoe.Views;
 
-import javafx.geometry.Insets;
+import com.uptc.edu.co.tictactoe.App;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
-import com.uptc.edu.co.tictactoe.App;
-import com.uptc.edu.co.tictactoe.Utils.FontUtils;
-import java.io.InputStream;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import java.util.logging.Logger;
 
 public class ConnectionErrorView {
-    private Scene scene;
-    private final double ICON_SIZE = 200.0;
+    private static final Logger LOGGER = Logger.getLogger(ConnectionErrorView.class.getName());
+    private Stage dialog;
+    private TextArea detailsArea;
 
     public ConnectionErrorView() {
-        createView();
-    }
+        LOGGER.fine("Creando ventana de error de conexión");
+        dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Error de Conexión");
+        dialog.setMinWidth(400);
+        dialog.setMinHeight(300);
 
-    private void createView() {
-        VBox root = new VBox(30);
-        root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(40));
-        root.getStyleClass().add("background");
+        VBox layout = new VBox(20);
+        layout.setAlignment(Pos.CENTER);
+        layout.getStyleClass().add("error-dialog");
 
-        // Icono de error
-        ImageView errorIcon = createImageView("/Icons/ErrorClose.png", ICON_SIZE);
-        if (errorIcon != null) {
-            errorIcon.setEffect(createNeonEffect(Color.rgb(255, 45, 45)));
-            root.getChildren().add(errorIcon);
-        }
+        Label messageLabel = new Label("No se pudo conectar al servidor");
+        messageLabel.getStyleClass().add("error-message");
 
-        // Mensaje de error
-        Text errorText = new Text("ERROR DE CONEXIÓN");
-        errorText.setFont(FontUtils.cargarFuenteBaloo(42));
-        errorText.setFill(Color.web("#FFB3F9"));
-        errorText.setEffect(createNeonEffect(Color.web("#FF2DF1")));
+        detailsArea = new TextArea();
+        detailsArea.setEditable(false);
+        detailsArea.setWrapText(true);
+        detailsArea.setPrefRowCount(5);
+        detailsArea.getStyleClass().add("error-details");
+        setErrorDetails("Error de conexión: No se pudo establecer la conexión con el servidor.\n\n" +
+                       "Posibles causas:\n" +
+                       "1. El servidor no está en ejecución\n" +
+                       "2. La dirección o puerto del servidor son incorrectos\n" +
+                       "3. Hay un problema con la red\n\n" +
+                       "Por favor, verifica que:\n" +
+                       "1. El servidor esté ejecutándose\n" +
+                       "2. El puerto configurado (12345) esté disponible\n" +
+                       "3. No haya un firewall bloqueando la conexión");
 
-        Text subtitleText = new Text("NO SE PUDO CONECTAR AL SERVIDOR");
-        subtitleText.setFont(FontUtils.cargarFuenteBaloo(24));
-        subtitleText.setFill(Color.web("#FFB3F9"));
-        subtitleText.setEffect(createNeonEffect(Color.web("#FF2DF1")));
+        Button retryButton = new Button("Reintentar");
+        retryButton.getStyleClass().add("retry-button");
+        retryButton.setOnAction(e -> {
+            LOGGER.info("Usuario solicitó reintentar conexión");
+            dialog.close();
+            App.mostrarLoginView();
+        });
 
-        // Botón de reintentar
-        Button retryButton = new Button("REINTENTAR");
-        retryButton.getStyleClass().add("neon-button");
-        retryButton.setFont(FontUtils.cargarFuenteBaloo(20));
-        retryButton.setOnAction(e -> App.mostrarLoginView());
+        layout.getChildren().addAll(messageLabel, detailsArea, retryButton);
 
-        root.getChildren().addAll(errorText, subtitleText, retryButton);
+        Scene scene = new Scene(layout);
+        scene.getStylesheets().add(getClass().getResource("/Styles/error-dialog.css").toExternalForm());
+        dialog.setScene(scene);
         
-        scene = new Scene(root, 800, 600);
-        String cssPath = "/Styles/login.css";
-        if (getClass().getResource(cssPath) != null) {
-            scene.getStylesheets().add(getClass().getResource(cssPath).toExternalForm());
-        }
+        LOGGER.fine("Ventana de error de conexión creada exitosamente");
     }
 
-    private ImageView createImageView(String resourcePath, double size) {
-        try {
-            InputStream is = getClass().getResourceAsStream(resourcePath);
-            if (is == null) {
-                System.err.println("No se pudo cargar el recurso: " + resourcePath);
-                return null;
-            }
-            Image image = new Image(is);
-            ImageView imageView = new ImageView(image);
-            imageView.setFitWidth(size);
-            imageView.setFitHeight(size);
-            imageView.setPreserveRatio(true);
-            return imageView;
-        } catch (Exception e) {
-            System.err.println("Error al cargar la imagen " + resourcePath + ": " + e.getMessage());
-            return null;
-        }
-    }
-
-    private DropShadow createNeonEffect(Color color) {
-        DropShadow neonEffect = new DropShadow();
-        neonEffect.setColor(color);
-        neonEffect.setSpread(0.5);
-        neonEffect.setRadius(20);
-        return neonEffect;
-    }
-
-    public Scene getScene() {
-        return scene;
+    public void setErrorDetails(String details) {
+        LOGGER.fine("Actualizando detalles del error: " + details);
+        detailsArea.setText(details);
     }
 
     public void show() {
-        App.cambiarEscena(scene, "Error de Conexión");
+        LOGGER.info("Mostrando ventana de error de conexión");
+        dialog.showAndWait();
     }
 }

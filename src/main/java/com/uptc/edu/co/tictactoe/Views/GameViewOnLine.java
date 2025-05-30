@@ -325,6 +325,15 @@ public class GameViewOnLine {
     private void handleLoginConfirm(Map<String, Object> data) {
         Platform.runLater(() -> {
             statusLabel.setText("Conectado al servidor. Esperando oponente...");
+            // Enviar solicitud de partida
+            try {
+                Map<String, Object> requestData = new HashMap<>();
+                requestData.put("playerName", playerName);
+                clientConnection.sendRequest("requestMatch", requestData);
+            } catch (IOException e) {
+                System.err.println("Error al solicitar partida: " + e.getMessage());
+                handleConnectionError();
+            }
         });
     }
 
