@@ -812,6 +812,7 @@ public class GameViewOnLine {
                 WinView winView = new WinView(displayWinnerName, isDraw, iconForWinView);
                 Stage currentStage = (Stage) scene.getWindow();
                 if (currentStage != null) {
+                    currentStage.setFullScreen(true);
                     currentStage.setScene(winView.getScene());
                     winView.getMainMenuButton().setOnAction(e -> {
                          try {
@@ -938,6 +939,7 @@ public class GameViewOnLine {
                 WinView winView = new WinView(displayWinnerName, isDraw, iconForWinView);
                 Stage currentStage = (Stage) scene.getWindow();
                 if (currentStage != null) {
+                    currentStage.setFullScreen(true);
                     currentStage.setScene(winView.getScene());
                      winView.getMainMenuButton().setOnAction(e -> {
                          try {
